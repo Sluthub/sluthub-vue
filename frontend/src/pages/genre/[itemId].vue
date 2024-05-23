@@ -60,7 +60,7 @@ import { useBaseItem } from '@/composables/apis';
 
 const route = useRoute('/genre/[itemId]');
 
-const { itemId } = route.params;
+const { itemId } = (route.params).itemId.replaceAll('-', '');
 
 const includeItemTypes = computed<BaseItemKind[]>(() => {
   const typesQuery = route.query.type as BaseItemKind ?? [];
