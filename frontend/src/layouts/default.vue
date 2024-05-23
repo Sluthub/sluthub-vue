@@ -2,7 +2,7 @@
   <AppBar />
   <NavigationDrawer
     :order="display.mobile.value ? -1 : undefined"
-    :drawer-items="drawerItems" />
+    :drawer-items="drawerItems as DrawerItem[]" />
   <VMain>
     <div class="pa-s">
       <slot />
@@ -28,7 +28,8 @@ const navDrawer = ref(!display.mobile.value);
 
 const { views } = await fetchIndexPage();
 
-const drawerItems = computed<DrawerItem[]>(() => {
+
+const drawerItems = computed(() => {
   return (views.value ?? []).map((view: BaseItemDto) => {
     return {
       icon: getLibraryIcon(view.CollectionType),
