@@ -26,6 +26,7 @@ import IMdiMusic from 'virtual:icons/mdi/music';
 import IMdiMusicBox from 'virtual:icons/mdi/music-box';
 import IMdiMusicNote from 'virtual:icons/mdi/music-note';
 import IMdiPlaylistPlay from 'virtual:icons/mdi/playlist-play';
+import IMdiBookmarkBoxMultiple from 'virtual:icons/mdi/bookmark-box-multiple';
 import IMdiTelevisionClassic from 'virtual:icons/mdi/television-classic';
 import IMdiYoutube from 'virtual:icons/mdi/youtube';
 import IMdiYoutubeTV from 'virtual:icons/mdi/youtube-tv';
@@ -396,7 +397,7 @@ export function getItemIcon(
       }
       case 'Folder':
       case 'CollectionFolder': {
-        itemIcon = IMdiFolder;
+        itemIcon = IMdiBookmarkBoxMultiple;
         break;
       }
       case 'Movie': {
