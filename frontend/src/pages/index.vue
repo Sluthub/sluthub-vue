@@ -15,7 +15,9 @@
         <SwiperSection
           :title="homeSection.title"
           :items="getHomeSectionContent(homeSection)"
-          :shape="homeSection.shape" />
+          :shape="homeSection.shape"
+          :type="homeSection.type" 
+        />
       </VRow>
     </VContainer>
   </div>

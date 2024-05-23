@@ -50,7 +50,7 @@
             :shape="shape"
             margin
             text
-            overlay
+            :overlay="type ? type !== `libraries` : true"
             link />
         </SwiperSlide>
       </Swiper>
@@ -75,6 +75,7 @@ const props = defineProps<{
   title: string;
   items: BaseItemDto[];
   shape?: CardShapes;
+  type: string;
 }>();
 
 const uuid = v4();
