@@ -38,13 +38,6 @@
         :item="library"
         @change="onChangeFilter" />
       <VSpacer />
-      <PlayButton
-        v-if="library"
-        :item="library"
-        shuffle />
-      <PlayButton
-        v-if="library"
-        :item="library" />
     </VAppBar>
     <VContainer>
       <ItemGrid
