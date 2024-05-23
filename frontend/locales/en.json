@@ -124,6 +124,8 @@
   "helpTranslate": "Translate Jellyfin to your language",
   "hide": "Hide",
   "home": "Home",
+  "discord": "Discord",
+  "requests": "Requests",
   "homeScreen": "Home screen",
   "homeScreenSettingsDescription": "Configure your home sections and home screen layout",
   "identify": "Identify",
