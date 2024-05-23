@@ -71,7 +71,7 @@ router.back = (): ReturnType<typeof router.back> => {
 const pageTitle = computed(() => {
   const title = router.currentRoute.value.meta.title?.trim();
 
-  return title ? `${title} | Jellyfin Vue` : 'Jellyfin Vue';
+  return title ? `${title} | Sluthub` : 'Sluthub';
 });
 
 useTitle(pageTitle);

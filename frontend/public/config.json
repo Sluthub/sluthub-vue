@@ -1,5 +1,5 @@
 {
-  "defaultServerURLs": [],
-  "allowServerSelection": true,
+  "defaultServerURLs": ["https://api.sluthub.is/"],
+  "allowServerSelection": false,
   "routerMode": "hash"
 }
