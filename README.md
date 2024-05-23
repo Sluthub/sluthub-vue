@@ -5,7 +5,7 @@
 ---
 
 
-This is our custom frontend for our media server based on the Jellyfin-vue client. It will get regular updates, whenever they are pushed at origin. Aside from that, we will also add our own changes:
+This is our custom frontend for our media server based on the Jellyfin-vue client. It will be kept up-to-date with the origin, so expect merges whenever they are pushed at origin. Aside from that, we will also add our own changes:
 
 - Cosmetic changes to align with the sluthub branding
 - Preferential changes like sortings or excludes for certain media-types
