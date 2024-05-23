@@ -612,7 +612,9 @@ export async function fetchIndexPage(): Promise<IndexPageQueries> {
     useBaseItem(getItemsApi, 'getResumeItems')(() => ({
       mediaTypes: ['Video']
     })),
-    useBaseItem(getUserLibraryApi, 'getLatestMedia')(() => ({})),
+    useBaseItem(getUserLibraryApi, 'getLatestMedia')(() => ({
+      includeItemTypes: [BaseItemKind.Series, BaseItemKind.Movie]
+    })),
     useBaseItem(getTvShowsApi, 'getNextUp')(() => ({})),
     latestFromLibrary()
   ];
