@@ -211,7 +211,7 @@ const { loading, data: queryItems } = await useBaseItem(api, method)(() => ({
   isHd: filters.value.types.includes('isHD') || undefined,
   is4K: filters.value.types.includes('is4K') || undefined,
   is3D: filters.value.types.includes('is3D') || undefined,
-  startIndex: queryLimit.value ? undefined : lazyLoadLimit,
+  startIndex: 0,
   limit: queryLimit.value
 }));
 
