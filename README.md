@@ -11,6 +11,8 @@ This is our custom for our media server based on the Jellyfin-vue client. It wil
 - Preferential changes like sortings or excludes for certain media-types
 - Small logic fixes that wont affect the end-user, and wont make merging complicated
 
+You can check for all those changes [here](https://github.com/Sluthub/sluthub-vue/commits/master/?author=ClaraCrazy)
+
 ---
 
 # Usage instructions for developers 🛠
