@@ -28,7 +28,9 @@ const excludeViewTypes = new Set([
   'playlists',
   'livetv',
   'boxsets',
-  'channels'
+  'channels',
+  'music',
+  'playlists'
 ]);
 </script>
 
