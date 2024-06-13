@@ -119,7 +119,7 @@ async function createUser(): Promise<void> {
     await remote.sdk.newUserApi(getUserApi).updateUserPolicy({
       userId: res.Id ?? '',
       userPolicy: {
-        ...res.Policy,
+        ...res.Policy!,
         EnableAllFolders: canAccessAllLibraries.value,
         ...(!canAccessAllLibraries.value && {
           EnabledFolders: accessableLibraries.value

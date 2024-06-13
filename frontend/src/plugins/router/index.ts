@@ -26,8 +26,6 @@ export const router = createRouter({
   scrollBehavior(_to, _from, savedPosition) {
     return savedPosition ?? { top: 0 };
   }
-
-  // @ts-expect-error - Wait for upstream fix for https://github.com/posva/unplugin-vue-router/pull/157
 }) as _RouterTyped<RouteNamedMap>;
 
 /**
@@ -98,13 +96,13 @@ watch(
       await router.replace('/server/add');
     } else if (
       !remote.auth.currentUser
-      && remote.auth.servers.length > 0
+      && remote.auth.servers.length
       && remote.auth.currentServer
     ) {
       await (remote.auth.currentServer.StartupWizardCompleted ? router.replace('/server/login') : router.replace('/wizard'));
     } else if (
       !remote.auth.currentUser
-      && remote.auth.servers.length > 0
+      && remote.auth.servers.length
       && !remote.auth.currentServer
     ) {
       await router.replace('/server/select');

@@ -52,7 +52,7 @@ jobs:
     runs-on: ${{ matrix.platform }}-latest
     steps:
       - name: Checkout ⬇️
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4.1.7
         with:
           show-progress: false
 
@@ -75,7 +75,7 @@ jobs:
         run: npm run build
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.1.2
+        uses: actions/attest-build-provenance@v1.2.0
         with:
           subject-path: |
             ${{ matrix.platform == 'ubuntu' && 'packaging/tauri/target/release/bundle/appimage_deb' || '' }}
@@ -166,7 +166,7 @@ jobs:
 
     steps:
       - name: Checkout ⬇️
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4.1.7
         with:
           show-progress: false
 
@@ -177,7 +177,7 @@ jobs:
         uses: docker/setup-buildx-action@v3.3.0
 
       - name: Build images 🛠️
-        uses: docker/build-push-action@v5.3.0
+        uses: docker/build-push-action@v5.4.0
         id: image
         with:
           context: .
@@ -200,7 +200,7 @@ jobs:
           path: docker_image.tar
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.1.2
+        uses: actions/attest-build-provenance@v1.2.0
         with:
           subject-path: docker_image.tar
 
@@ -230,7 +230,7 @@ jobs:
           docker cp $(docker create --name jf $(docker images --filter=reference='${{ env.REGISTRY_IMAGE }}' -q | head -n 1)):/usr/share/nginx/html/ ./dist
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.1.2
+        uses: actions/attest-build-provenance@v1.2.0
         with:
           subject-path: dist
 
@@ -257,7 +257,7 @@ jobs:
           path: /tmp/${{ env.REGISTRY_IMAGE }}/cache/
   
       - name: Checkout ⬇️
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4.1.7
         with:
           show-progress: false
 
@@ -268,20 +268,20 @@ jobs:
         uses: docker/setup-buildx-action@v3.3.0
 
       - name: Login to Docker Hub 🔑
-        uses: docker/login-action@v3.1.0
+        uses: docker/login-action@v3.2.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry 🔑
-        uses: docker/login-action@v3.1.0
+        uses: docker/login-action@v3.2.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.JF_BOT_TOKEN }}
 
       - name: Create multiplatform image ${{ inputs.push && 'and push 🛠️⬆️' || '🛠️' }} 
-        uses: docker/build-push-action@v5.3.0
+        uses: docker/build-push-action@v5.4.0
         id: image
         with:
           context: .

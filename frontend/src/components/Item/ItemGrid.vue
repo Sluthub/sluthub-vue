@@ -1,34 +1,35 @@
 <template>
   <div :class="large ? useResponsiveClasses('large-grid') : undefined">
-    <VirtualGrid
-      v-if="items.length > 0 && !noVirtual"
-      v-slot="{ item, style }"
-      :items="items"
-      :class="useResponsiveClasses('card-grid-container')">
-      <ItemCard
-        :style="style"
-        :item="item"
-        margin
-        text
-        overlay
-        link />
-    </VirtualGrid>
-    <div
-      v-else-if="items.length > 0 && noVirtual"
-      :class="useResponsiveClasses('card-grid-container')">
-      <template
-        v-for="item of items"
-        :key="item.Id">
+    <template v-if="items.length">
+      <JVirtualGrid
+        v-if="!noVirtual"
+        v-slot="{ item }"
+        :items="items"
+        :class="useResponsiveClasses('card-grid-container')">
         <ItemCard
           :item="item"
           margin
           text
           overlay
           link />
-      </template>
-    </div>
+      </JVirtualGrid>
+      <div
+        v-else
+        :class="useResponsiveClasses('card-grid-container')">
+        <template
+          v-for="item of items"
+          :key="item.Id">
+          <ItemCard
+            :item="item"
+            margin
+            text
+            overlay
+            link />
+        </template>
+      </div>
+    </template>
     <VRow
-      v-else-if="items.length === 0"
+      v-else
       justify="center">
       <VCol
         cols="12"
