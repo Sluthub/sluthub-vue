@@ -1,20 +1,25 @@
 import jsdoc from 'eslint-plugin-jsdoc';
 import unicorn from 'eslint-plugin-unicorn';
-import eslintImport from 'eslint-plugin-import';
+import eslintImportX from 'eslint-plugin-import-x';
 import fileProgress from 'eslint-plugin-file-progress';
+import promise from 'eslint-plugin-promise'
 import js from '@eslint/js';
 import globals from 'globals';
 import vueScopedCSS from 'eslint-plugin-vue-scoped-css';
+import css from 'eslint-plugin-css';
 import vue from 'eslint-plugin-vue';
+import i18n from '@intlify/eslint-plugin-vue-i18n';
 import { FlatCompat } from '@eslint/eslintrc';
 import gitignore from 'eslint-config-flat-gitignore';
 import stylistic from '@stylistic/eslint-plugin';
 import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
 import jsonc from 'eslint-plugin-jsonc';
+import regexp from "eslint-plugin-regexp";
 
-const vueAndTsFiles = ['*.vue', '**/*.vue', '*.ts', '**/*.ts'];
+const tsFiles = ['*.ts', '**/*.ts'];
 const vueFiles = ['*.vue', '**/*.vue'];
+const vueAndTsFiles = [...vueFiles, ...tsFiles];
 const CI_environment = process.env.CI ? 0 : 1;
 
 /**
@@ -28,16 +33,24 @@ const flatArrayOfObjects = obj => Object.assign({}, ...obj);
 
 export default tseslint.config(
   /** Global settings */
-  js.configs.recommended,
-  unicorn.configs['flat/recommended'],
-  stylistic.configs.customize({
-    quotes: 'single',
-    semi: true,
-    commaDangle: 'never',
-    braceStyle: '1tbs',
-    arrowParens: false,
-    blockSpacing: true
-  }),
+  { ...js.configs.recommended,
+    name: '(eslint) Extended recommended rules'
+  },
+  {
+    ...unicorn.configs['flat/recommended'],
+    name: '(unicorn) Extended rules'
+  },
+  {
+    ...stylistic.configs.customize({
+      quotes: 'single',
+      semi: true,
+      commaDangle: 'never',
+      braceStyle: '1tbs',
+      arrowParens: false,
+      blockSpacing: true
+    }),
+    name: '(@stylistic) Extended rules'
+  },
   /** File progress plugin */
   {
     name: 'Progress reporting',
@@ -63,6 +76,12 @@ export default tseslint.config(
       sourceType: 'module',
       globals: {
         ...globals.browser
+      }
+    },
+    settings: {
+      'vue-i18n': {
+        localeDir: 'locales/en.json',
+        messageSyntaxVersion: '^9.0.0'
       }
     },
     rules: {
@@ -113,8 +132,8 @@ export default tseslint.config(
     name: '(typescript-eslint) Extended ESLint recommended rules for typechecking'
   },
   {
-    ...flatArrayOfObjects(compat.extends('plugin:optimize-regex/recommended')),
-    name: '(optimize-regex) Extended rules',
+    ...regexp.configs["flat/recommended"],
+    name: '(regexp) Extended rules',
     files: vueAndTsFiles
   },
   {
@@ -123,7 +142,7 @@ export default tseslint.config(
     files: vueAndTsFiles
   },
   {
-    ...flatArrayOfObjects(compat.extends('plugin:promise/recommended')),
+    ...promise.configs['flat/recommended'],
     name: '(promise) Extended rules',
     files: vueAndTsFiles
   },
@@ -139,10 +158,10 @@ export default tseslint.config(
     name: '(import) Custom rule configs',
     files: vueAndTsFiles,
     plugins: {
-      import: eslintImport
+      'import-x': eslintImportX
     },
     rules: {
-      'import/no-extraneous-dependencies': [
+      'import-x/no-extraneous-dependencies': [
         'error',
         {
           devDependencies: ['*.config.ts', 'scripts/**/*.ts'],
@@ -151,25 +170,19 @@ export default tseslint.config(
           bundledDependencies: false
         }
       ],
-      'import/order': 'error',
-      'import/no-cycle': 'error',
-      'import/no-nodejs-modules': 'error',
-      'import/no-duplicates': ['error', { 'prefer-inline': true, 'considerQueryString': true }],
+      'import-x/order': 'error',
+      'import-x/no-cycle': 'error',
+      'import-x/no-nodejs-modules': 'error',
+      'import-x/no-duplicates': ['error', { 'prefer-inline': true, 'considerQueryString': true }],
       // From the recommended preset
-      'import/named': 'error',
-      'import/export': 'error'
+      'import-x/named': 'error',
+      'import-x/export': 'error'
     }
   },
+  ...i18n.configs['flat/recommended'],
   {
-    ...flatArrayOfObjects(compat.extends('plugin:@intlify/vue-i18n/recommended')),
     name: '(@intlify/vue-i18n) Extended rules',
     files: vueAndTsFiles,
-    settings: {
-      'vue-i18n': {
-        localeDir: 'locales/en.json',
-        messageSyntaxVersion: '^9.0.0'
-      }
-    }
   },
   {
     name: '(@intlify/vue-i18n) Custom rule configs',
@@ -235,8 +248,8 @@ export default tseslint.config(
     files: vueFiles
   },
   {
-    ...flatArrayOfObjects(compat.extends('plugin:css/recommended')),
-    name: 'Base config for Vue SFC files (Scoped CSS - eslint-plugin-css)',
+    ...css.configs['flat/recommended'],
+    name: 'Base config for Vue SFC files (CSS attributes - eslint-plugin-css)',
     files: vueFiles
   },
   {
@@ -244,7 +257,12 @@ export default tseslint.config(
     files: vueFiles,
     languageOptions: {
       parserOptions: {
-        parser: '@typescript-eslint/parser'
+        parser: tseslint.parser,
+        /**
+         * https://github.com/vuejs/vue-eslint-parser/issues/104#issuecomment-2148652586
+         */
+        allowAutomaticSingleRunInference: false,
+        disallowAutomaticSingleRunInference: true,
       }
     },
     rules: {

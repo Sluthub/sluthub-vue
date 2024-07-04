@@ -5,14 +5,16 @@
       <RouterView v-slot="{ Component, route }">
         <JTransition
           :name="route.meta.layout.transition.enter ?? defaultTransition"
-          :mode="defaultTransitionMode ?? route.meta.layout.transition.mode">
+          :mode="defaultTransitionMode ?? route.meta.layout.transition.mode"
+          important>
           <Suspense @resolve="apploaded = true">
             <JView
               :key="route.meta.layout.name ?? 'default'"
               :comp="getLayoutComponent(route.meta.layout.name)">
                 <JTransition
                   :name="route.meta.layout.transition.enter ?? defaultTransition"
-                  :mode="defaultTransitionMode ?? route.meta.layout.transition.mode">
+                  :mode="defaultTransitionMode ?? route.meta.layout.transition.mode"
+                  important>
                   <Suspense suspensible>
                     <JView :key="route.path" :comp="Component" />
                   </Suspense>
@@ -36,7 +38,7 @@
  * TODO: Remove j-transition classes from this file once https://github.com/vuejs/core/issues/5148 is fixed
  */
 import { shallowRef, type Component as VueComponent, onMounted } from 'vue';
-import type { RouteMeta } from 'vue-router/auto';
+import type { RouteMeta } from 'vue-router';
 import DefaultLayout from '@/layouts/default.vue';
 import FullPageLayout from '@/layouts/fullpage.vue';
 import ServerLayout from '@/layouts/server.vue';

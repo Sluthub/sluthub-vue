@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Static, createVNode, h } from 'vue';
 import { sanitizeHtml } from '@/utils/html';
 
 interface Props {
@@ -6,7 +7,10 @@ interface Props {
   markdown?: boolean;
 }
 
-const JSafeHtml = (props: Props) => sanitizeHtml(props.html, props.markdown);
+const JSafeHtml = (props: Props) => h(
+  createVNode(Static, undefined, sanitizeHtml(props.html, Boolean(props.markdown))),
+  { key: props.html }
+);
 
 JSafeHtml.inheritAttrs = false;
 

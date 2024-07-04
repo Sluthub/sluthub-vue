@@ -26,6 +26,7 @@ env:
   RELEASE_TAG: stable
   PRERELEASE_TAG: stable-rc
   COMMIT_TAG: unstable
+  DOCKER_BUILD_RECORD_UPLOAD: false
 
 permissions:
   id-token: write
@@ -48,6 +49,11 @@ jobs:
     defaults:
       run:
         working-directory: packaging/tauri
+    env:
+      ARTIFACTS_PATH: |
+        ${{ matrix.platform == 'ubuntu' && 'packaging/tauri/target/release/bundle/appimage_deb' || '' }}
+        ${{ matrix.platform == 'macos' && 'packaging/tauri/target/release/bundle/macos' || '' }}
+        ${{ matrix.platform == 'windows' && 'packaging/tauri/target/release/jellyfin-vue-tauri.exe' || '' }}
 
     runs-on: ${{ matrix.platform }}-latest
     steps:
@@ -75,22 +81,16 @@ jobs:
         run: npm run build
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.2.0
+        uses: actions/attest-build-provenance@v1.3.2
         with:
-          subject-path: |
-            ${{ matrix.platform == 'ubuntu' && 'packaging/tauri/target/release/bundle/appimage_deb' || '' }}
-            ${{ matrix.platform == 'macos' && 'packaging/tauri/target/release/bundle/macos' || '' }}
-            ${{ matrix.platform == 'windows' && 'packaging/tauri/target/release/jellyfin-vue.exe' || '' }}
+          subject-path: ${{ env.ARTIFACTS_PATH }}
 
       - name: Upload built application artifact ⬆️🐧🍎🪟
         uses: actions/upload-artifact@v4.3.3
         with:
           compression-level: 0
           name: jellyfin-vue_${{ matrix.platform }}
-          path: |
-            ${{ matrix.platform == 'ubuntu' && 'packaging/tauri/target/release/bundle/appimage_deb' || '' }}
-            ${{ matrix.platform == 'macos' && 'packaging/tauri/target/release/bundle/macos' || '' }}
-            ${{ matrix.platform == 'windows' && 'packaging/tauri/target/release/jellyfin-vue.exe' || '' }}
+          path: ${{ env.ARTIFACTS_PATH }}
 
   docker_inputs:
     name: Prepare Docker build variables 🏷️🐳
@@ -177,7 +177,7 @@ jobs:
         uses: docker/setup-buildx-action@v3.3.0
 
       - name: Build images 🛠️
-        uses: docker/build-push-action@v5.4.0
+        uses: docker/build-push-action@v6.3.0
         id: image
         with:
           context: .
@@ -200,7 +200,7 @@ jobs:
           path: docker_image.tar
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.2.0
+        uses: actions/attest-build-provenance@v1.3.2
         with:
           subject-path: docker_image.tar
 
@@ -230,7 +230,7 @@ jobs:
           docker cp $(docker create --name jf $(docker images --filter=reference='${{ env.REGISTRY_IMAGE }}' -q | head -n 1)):/usr/share/nginx/html/ ./dist
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.2.0
+        uses: actions/attest-build-provenance@v1.3.2
         with:
           subject-path: dist
 
@@ -281,7 +281,7 @@ jobs:
           password: ${{ secrets.JF_BOT_TOKEN }}
 
       - name: Create multiplatform image ${{ inputs.push && 'and push 🛠️⬆️' || '🛠️' }} 
-        uses: docker/build-push-action@v5.4.0
+        uses: docker/build-push-action@v6.3.0
         id: image
         with:
           context: .

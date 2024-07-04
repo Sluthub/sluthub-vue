@@ -196,7 +196,6 @@ class ApiStore {
             (updatedData: unknown): updatedData is { ItemId: string } => {
               if (
                 isObj(updatedData)
-                && updatedData
                 && 'ItemId' in updatedData
                 && isStr(updatedData.ItemId)
               ) {
@@ -217,9 +216,13 @@ class ApiStore {
     watch(
       () => remote.auth.currentUser,
       () => {
-        if (!remote.auth.currentUser) {
-          this._clear();
-        }
+        window.requestAnimationFrame(() => {
+          window.setTimeout(() => {
+            if (!remote.auth.currentUser) {
+              this._clear();
+            }
+          });
+        });
       }, { flush: 'post' }
     );
   }

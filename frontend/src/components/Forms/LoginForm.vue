@@ -41,7 +41,7 @@
             {{ $t('changeServer') }}
           </VBtn>
           <VBtn
-            v-else
+            v-else-if="remote.auth.currentServer?.PublicUsers.length"
             block
             size="large"
             variant="elevated"
@@ -72,7 +72,7 @@ import IconEye from 'virtual:icons/mdi/eye';
 import IconEyeOff from 'virtual:icons/mdi/eye-off';
 import { ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router/auto';
+import { useRouter } from 'vue-router';
 import { fetchIndexPage } from '@/utils/items';
 import { remote } from '@/plugins/remote';
 import { getJSONConfig } from '@/utils/external-config';
