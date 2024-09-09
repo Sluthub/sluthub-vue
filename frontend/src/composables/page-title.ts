@@ -6,7 +6,7 @@ import { isNil } from '@/utils/validation';
 /**
  * This composable handles the page title of the application.
  */
-const DEFAULT_PAGE_TITLE = 'Jellyfin Vue';
+const DEFAULT_PAGE_TITLE = 'Sluthub Vue';
 const _title = shallowRef<string>();
 const _fullTitle = computed(() => _title.value ? `${_title.value.trim()} | ${DEFAULT_PAGE_TITLE}` : DEFAULT_PAGE_TITLE);
 
