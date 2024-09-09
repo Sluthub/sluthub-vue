@@ -12,8 +12,7 @@
             sm="1">
             <ItemCard
               :item="release"
-              overlay
-              link />
+              overlay />
           </VCol>
           <VCol class="py-2">
             <div class="text-subtitle-1 text--secondary font-weight-medium">
@@ -24,7 +23,7 @@
               :to="getItemDetailsLink(release)"
               custom>
               <h2
-                class="link font-weight-bold text-h6 text-md-h4"
+                class="link text-h6 font-weight-bold text-md-h4"
                 @click="navigate">
                 {{ release.Name }}
               </h2>
@@ -47,7 +46,7 @@
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client';
 import { getItemDetailsLink } from '@/utils/items';
 
-defineProps<{
+const { releases } = defineProps<{
   releases: BaseItemDto[];
 }>();
 </script>

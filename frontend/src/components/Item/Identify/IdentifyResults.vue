@@ -11,15 +11,8 @@
         <template #image>
           <JImg
             :src="item.ImageUrl"
+            :alt="item.Name ?? $t('imageSearchResult')"
             once>
-            <template #loading>
-              <VProgressCircular indeterminate />
-            </template>
-            <template #error>
-              <VIcon>
-                <IMdiImageBrokenVariant />
-              </VIcon>
-            </template>
             <VIcon>
               <IMdiImage />
             </VIcon>
@@ -44,7 +37,7 @@ import type {
 import { computed } from 'vue';
 import { getShapeFromItemType } from '@/utils/items';
 
-const props = defineProps<{
+const { items, itemType } = defineProps<{
   items: RemoteSearchResult[];
   itemType?: BaseItemKind;
 }>();
@@ -53,7 +46,7 @@ defineEmits<{
   select: [item: RemoteSearchResult];
 }>();
 
-const shape = computed(() => getShapeFromItemType(props.itemType));
+const shape = computed(() => getShapeFromItemType(itemType));
 
 /**
  * Generate card's subtitles

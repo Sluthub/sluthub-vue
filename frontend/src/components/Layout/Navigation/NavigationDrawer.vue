@@ -46,6 +46,7 @@ import type { RouteNamedMap } from 'vue-router/auto-routes';
 import type { getLibraryIcon } from '@/utils/items';
 import IMovieOpenPlus from 'virtual:icons/mdi/movie-open-plus';
 import IMdiMessageText from 'virtual:icons/mdi/message-text';
+import { prefersNoTransparency } from '@/store';
 
 export interface DrawerItem {
   icon: ReturnType<typeof getLibraryIcon>;
@@ -53,7 +54,7 @@ export interface DrawerItem {
   to: keyof RouteNamedMap;
 }
 
-defineProps<{
+const { order, drawerItems } = defineProps<{
   order?: number;
   drawerItems: DrawerItem[];
 }>();
@@ -62,7 +63,7 @@ const route = useRoute();
 const { t } = useI18n();
 
 const drawer = inject<Ref<boolean>>('NavigationDrawer');
-const transparentLayout = computed(() => route.meta.layout.transparent);
+const transparentLayout = computed(() => !prefersNoTransparency.value && route.meta.layout.transparent);
 
 const items = [
   {

@@ -2,38 +2,56 @@
   <JTransition>
     <div
       v-if="blurhash"
-      :key="`backdrop-${blurhash}`"
-      class="backdrop sizing">
+      :key="blurhash"
+      class="uno-fixed uno-left-0 uno-top-0 uno-h-screen uno-w-screen uno-bg-cover uno-color-background"
+      :style="{
+        opacity,
+      }">
       <BlurhashCanvas
         :hash="blurhash"
         :width="32"
         :height="32"
-        class="sizing" />
+        class="uno-fixed uno-left-0 uno-top-0 uno-h-screen uno-w-screen uno-bg-cover" />
     </div>
   </JTransition>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+<script lang="ts">
+import { toRef, type MaybeRefOrGetter, shallowRef, onMounted, onBeforeUnmount, computed } from 'vue';
+import { watchImmediate } from '@vueuse/core';
+import { isNil } from '@/utils/validation';
+import { prefersNoTransparency } from '@/store';
 
-const route = useRoute();
-const opacity = computed(() => route.meta.layout.backdrop.opacity ?? 0.25);
-const blurhash = computed(() => route.meta.layout.backdrop.blurhash);
+const DEFAULT_OPACITY = 0.25;
+const requested_opacity = shallowRef(DEFAULT_OPACITY);
+const _blurhash = shallowRef<string>();
+const _opacity = computed(() => prefersNoTransparency.value ? 0 : requested_opacity.value);
+
+/**
+ * Reactively sets the backdrop properties. Can be used in 2 ways:
+ *
+ * 1. Providing raw/reactive/ref/getters arguments that will be tracked for changes by the composable.
+ * 2. Accessing the returned refs and setting them manually.
+ *
+ * Values will be set to default (undefined for hash and 0.25 for opacity) when the component consuming this composable is unmounted.
+ */
+export function useBackdrop(hash?: MaybeRefOrGetter<string | undefined>, opacity?: MaybeRefOrGetter<number | undefined>) {
+  onMounted(() => {
+    if (!isNil(hash)) {
+      watchImmediate(toRef(hash), val => _blurhash.value = val);
+    }
+
+    if (!isNil(opacity)) {
+      watchImmediate(toRef(opacity), val => requested_opacity.value = val ?? DEFAULT_OPACITY);
+    }
+  });
+
+  onBeforeUnmount(() => _blurhash.value = undefined);
+  onBeforeUnmount(() => requested_opacity.value = DEFAULT_OPACITY);
+}
 </script>
 
-<style scoped>
-.backdrop {
-  background-color: rgb(var(--v-theme-background));
-  opacity: v-bind(opacity);
-}
-
-.sizing {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-size: cover;
-}
-</style>
+<script setup lang="ts">
+const blurhash = _blurhash;
+const opacity = _opacity;
+</script>

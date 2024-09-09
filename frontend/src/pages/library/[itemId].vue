@@ -9,17 +9,23 @@
       <VChip
         size="small"
         class="ma-2 hidden-sm-and-down">
-        <template v-if="!fullQueryIsCached">
+        <template v-if="loading && items.length === lazyLoadLimit && initialId === route.params.itemId">
           {{ t('lazyLoading', { value: items.length }) }}
         </template>
+        <VProgressCircular
+          v-else-if="loading"
+          indeterminate
+          width="2"
+          size="16" />
         <template v-else>
-          {{ items?.length ?? 0 }}
+          {{ items.length ?? 0 }}
         </template>
       </VChip>
       <VDivider
-        inset
+
         vertical
-        class="mx-2 hidden-sm-and-down" />
+        inset
+        class="hidden-sm-and-down mx-2" />
       <TypeButton
         v-if="hasViewTypes"
         v-model="viewType"
@@ -55,7 +61,7 @@
 
 <script setup lang="ts">
 import {
-  BaseItemKind, SortOrder, type BaseItemDto
+  BaseItemKind, SortOrder
 } from '@jellyfin/sdk/lib/generated-client';
 import { getArtistsApi } from '@jellyfin/sdk/lib/utils/api/artists-api';
 import { getGenresApi } from '@jellyfin/sdk/lib/utils/api/genres-api';
@@ -66,14 +72,15 @@ import { getStudiosApi } from '@jellyfin/sdk/lib/utils/api/studios-api';
 import { computed, onBeforeMount, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { apiStore } from '@/store/api';
 import { methodsAsObject, useBaseItem } from '@/composables/apis';
 import type { Filters } from '@/components/Buttons/FilterButton.vue';
+import { useItemPageTitle } from '@/composables/page-title';
 
 const { t } = useI18n();
 const route = useRoute('/library/[itemId]');
 
 const lazyLoadLimit = 50;
+const initialId = route.params.itemId;
 const COLLECTION_TYPES_MAPPINGS: Record<string, BaseItemKind> = {
   tvshows: BaseItemKind.Series,
   movies: BaseItemKind.Movie,
@@ -86,7 +93,6 @@ const innerItemKind = shallowRef<BaseItemKind>();
 const sortBy = shallowRef<string>();
 const sortAscending = shallowRef(true);
 const queryLimit = shallowRef<number | undefined>(lazyLoadLimit);
-const lazyLoadIds = shallowRef<BaseItemDto['Id'][]>([]);
 const filters = ref<Filters>({
   status: [],
   features: [],
@@ -149,7 +155,6 @@ const isSortable = computed(
       'Person',
       'Genre',
       'MusicGenre',
-      'MusicGenre',
       'Studio'
     ].includes(viewType.value)
 );
@@ -192,7 +197,7 @@ const method = computed(() => methods.value.methodName);
 /**
  * TODO: Improve the type situation of this statement
  */
-const { loading, data: queryItems } = await useBaseItem(api, method)(() => ({
+const { loading, data: items } = await useBaseItem(api, method)(() => ({
   parentId: parentId.value,
   personTypes: viewType.value === 'Person' ? ['Actor'] : undefined,
   includeItemTypes: viewType.value ? [viewType.value] : undefined,
@@ -211,24 +216,15 @@ const { loading, data: queryItems } = await useBaseItem(api, method)(() => ({
   isHd: filters.value.types.includes('isHD') || undefined,
   is4K: filters.value.types.includes('is4K') || undefined,
   is3D: filters.value.types.includes('is3D') || undefined,
-  startIndex: queryLimit.value ? undefined : lazyLoadLimit,
   limit: queryLimit.value
 }));
 
-/**
- * The queryItems for the 2nd request will return the items from (lazyloadLimit, n],
- * so checking if just the first matches is a good solution
- */
-const fullQueryIsCached = computed(() => loading.value ? !queryLimit.value && queryItems.value[0].Id !== lazyLoadIds.value[0] : true);
-const items = computed(() => fullQueryIsCached.value ? [...(apiStore.getItemsById(lazyLoadIds.value) as BaseItemDto[]), ...queryItems.value] : queryItems.value);
-
-route.meta.title = library.value.Name;
+useItemPageTitle(library);
 
 /**
- * We fetch the 1st 100 items and, after mount, we fetch the rest.
+ * We fetch the 1st 50 items and, after mount, we fetch the rest.
  */
 onBeforeMount(() => {
-  lazyLoadIds.value = queryItems.value.map(i => i.Id);
   queryLimit.value = undefined;
 });
 </script>

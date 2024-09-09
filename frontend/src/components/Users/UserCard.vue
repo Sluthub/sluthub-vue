@@ -14,7 +14,7 @@
           rounded
           :size="128" />
       </VBtn>
-      <a class="text-subtitle-1 text-center mt-2 link">
+      <a class="text-subtitle-1 text-center link mt-2">
         {{ user.Name }}
       </a>
     </div>
@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import type { UserDto } from '@jellyfin/sdk/lib/generated-client';
 
-defineProps<{ user: UserDto }>();
+const { user } = defineProps<{ user: UserDto }>();
 
 defineEmits<{
   connect: [user: UserDto];

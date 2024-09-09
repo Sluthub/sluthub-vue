@@ -2,7 +2,7 @@
   <VMain>
     <div
       ref="videoContainerRef"
-      class="fullscreen-video-container fill-height"
+      class="fill-height fullscreen-video-container"
       :class="{ 'uno-cursor-none': !overlay }"
       @mousemove="handleMouseMove"
       @touchend="handleMouseMove">
@@ -13,7 +13,7 @@
         width="100%"
         height="100%">
         <div
-          class="d-flex flex-column justify-space-between align-center player-overlay">
+          class="d-flex flex-column align-center justify-space-between player-overlay">
           <div class="osd-top pt-s pl-s pr-s">
             <div class="d-flex align-center py-2 px-4">
               <div class="d-flex">
@@ -29,23 +29,23 @@
               </div>
             </div>
           </div>
-          <div class="osd-bottom pb-s pl-s pr-s">
+          <div class="pl-s pr-s osd-bottom pb-s">
             <div class="pa-4">
               <TimeSlider />
               <div
-                class="controls-wrapper d-flex align-stretch justify-space-between">
+                class="d-flex justify-space-between controls-wrapper align-stretch">
                 <div
                   v-if="$vuetify.display.mdAndUp"
-                  class="d-flex flex-column align-start justify-center mr-auto video-title">
+                  class="d-flex flex-column justify-center align-start mr-auto video-title">
                   <template
                     v-if="
                       playbackManager.currentlyPlayingType ===
                         BaseItemKind.Episode
                     ">
-                    <span class="mt-1 text-subtitle-1 text-truncate">
+                    <span class="text-subtitle-1 text-truncate mt-1">
                       {{ playbackManager.currentItem?.Name }}
                     </span>
-                    <span class="text-subtitle-2 text--secondary text-truncate">
+                    <span class="text--secondary text-truncate text-subtitle-2">
                       {{ playbackManager.currentItem?.SeriesName }}
                     </span>
                     <span class="text-subtitle-2 text--secondary text-truncate">
@@ -69,12 +69,12 @@
                   </span>
                 </div>
                 <div
-                  class="d-flex player-controls align-center justify-start justify-md-center">
+                  class="d-flex align-center player-controls justify-start justify-md-center">
                   <PreviousTrackButton class="mx-1" />
                   <PlayPauseButton class="mx-1" />
                   <NextTrackButton class="mx-1" />
                 </div>
-                <div class="d-flex aligh-center ml-auto ml-md-0">
+                <div class="d-flex ml-auto aligh-center ml-md-0">
                   <VolumeSlider
                     v-if="$vuetify.display.smAndUp"
                     class="mr-2" />
@@ -214,22 +214,22 @@ watch(staticOverlay, (val) => {
   padding-bottom: 5em;
   background: linear-gradient(
     to bottom,
-    rgb(var(--v-theme-background), 0.75) 0%,
-    rgb(var(--v-theme-background), 0.74) 8.1%,
-    rgb(var(--v-theme-background), 0.714) 15.5%,
-    rgb(var(--v-theme-background), 0.672) 22.5%,
-    rgb(var(--v-theme-background), 0.618) 29%,
-    rgb(var(--v-theme-background), 0.556) 35.3%,
-    rgb(var(--v-theme-background), 0.486) 41.2%,
-    rgb(var(--v-theme-background), 0.412) 47.1%,
-    rgb(var(--v-theme-background), 0.338) 52.9%,
-    rgb(var(--v-theme-background), 0.264) 58.8%,
-    rgb(var(--v-theme-background), 0.194) 64.7%,
-    rgb(var(--v-theme-background), 0.132) 71%,
-    rgb(var(--v-theme-background), 0.078) 77.5%,
-    rgb(var(--v-theme-background), 0.036) 84.5%,
-    rgb(var(--v-theme-background), 0.01) 91.9%,
-    rgb(var(--v-theme-background), 0) 100%
+    rgb(var(--j-color-background), 0.75) 0%,
+    rgb(var(--j-color-background), 0.74) 8.1%,
+    rgb(var(--j-color-background), 0.714) 15.5%,
+    rgb(var(--j-color-background), 0.672) 22.5%,
+    rgb(var(--j-color-background), 0.618) 29%,
+    rgb(var(--j-color-background), 0.556) 35.3%,
+    rgb(var(--j-color-background), 0.486) 41.2%,
+    rgb(var(--j-color-background), 0.412) 47.1%,
+    rgb(var(--j-color-background), 0.338) 52.9%,
+    rgb(var(--j-color-background), 0.264) 58.8%,
+    rgb(var(--j-color-background), 0.194) 64.7%,
+    rgb(var(--j-color-background), 0.132) 71%,
+    rgb(var(--j-color-background), 0.078) 77.5%,
+    rgb(var(--j-color-background), 0.036) 84.5%,
+    rgb(var(--j-color-background), 0.01) 91.9%,
+    rgb(var(--j-color-background), 0) 100%
   );
 }
 
@@ -237,22 +237,22 @@ watch(staticOverlay, (val) => {
   padding-top: 6em;
   background: linear-gradient(
     to top,
-    rgb(var(--v-theme-background), 0.75) 0%,
-    rgb(var(--v-theme-background), 0.74) 8.1%,
-    rgb(var(--v-theme-background), 0.714) 15.5%,
-    rgb(var(--v-theme-background), 0.672) 22.5%,
-    rgb(var(--v-theme-background), 0.618) 29%,
-    rgb(var(--v-theme-background), 0.556) 35.3%,
-    rgb(var(--v-theme-background), 0.486) 41.2%,
-    rgb(var(--v-theme-background), 0.412) 47.1%,
-    rgb(var(--v-theme-background), 0.338) 52.9%,
-    rgb(var(--v-theme-background), 0.264) 58.8%,
-    rgb(var(--v-theme-background), 0.194) 64.7%,
-    rgb(var(--v-theme-background), 0.132) 71%,
-    rgb(var(--v-theme-background), 0.078) 77.5%,
-    rgb(var(--v-theme-background), 0.036) 84.5%,
-    rgb(var(--v-theme-background), 0.01) 91.9%,
-    rgb(var(--v-theme-background), 0) 100%
+    rgb(var(--j-color-background), 0.75) 0%,
+    rgb(var(--j-color-background), 0.74) 8.1%,
+    rgb(var(--j-color-background), 0.714) 15.5%,
+    rgb(var(--j-color-background), 0.672) 22.5%,
+    rgb(var(--j-color-background), 0.618) 29%,
+    rgb(var(--j-color-background), 0.556) 35.3%,
+    rgb(var(--j-color-background), 0.486) 41.2%,
+    rgb(var(--j-color-background), 0.412) 47.1%,
+    rgb(var(--j-color-background), 0.338) 52.9%,
+    rgb(var(--j-color-background), 0.264) 58.8%,
+    rgb(var(--j-color-background), 0.194) 64.7%,
+    rgb(var(--j-color-background), 0.132) 71%,
+    rgb(var(--j-color-background), 0.078) 77.5%,
+    rgb(var(--j-color-background), 0.036) 84.5%,
+    rgb(var(--j-color-background), 0.01) 91.9%,
+    rgb(var(--j-color-background), 0) 100%
   );
 }
 

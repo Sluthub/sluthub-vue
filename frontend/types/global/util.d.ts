@@ -14,3 +14,13 @@ type BetterOmit<T, K extends keyof never> = T extends Record<never, never>
 type Mutable<T> = {
   -readonly [K in keyof T]: T[K];
 };
+
+/**
+ * Gets the last item of a tuple
+ */
+type Tail<L> = L extends readonly [] ? L : L extends readonly [unknown?, ...infer LTail] ? LTail : L;
+
+/**
+ * Sets a type as nullish
+ */
+type Nullish<T> = T | null | undefined;

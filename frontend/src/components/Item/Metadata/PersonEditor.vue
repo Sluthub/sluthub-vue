@@ -15,7 +15,8 @@
               <JImg
                 :src="
                   person?.Id && $remote.sdk.api?.getItemImageUrl(person.Id, ImageType.Primary)
-                ">
+                "
+                :alt="$t('person')">
                 <template #placeholder>
                   <VIcon
                     class="bg-grey-darken-3">
@@ -82,7 +83,7 @@ import { useI18n } from 'vue-i18n';
 import { type BaseItemPerson, ImageType } from '@jellyfin/sdk/lib/generated-client';
 import { watchImmediate } from '@vueuse/core';
 
-const props = defineProps<{ person: BaseItemPerson | undefined }>();
+const { person } = defineProps<{ person: BaseItemPerson | undefined }>();
 
 const emit = defineEmits<{
   'update:person': [person: BaseItemPerson];
@@ -102,8 +103,8 @@ const options = computed(() => [
 ]);
 
 watchImmediate(
-  () => props.person,
-  (person) => {
+  () => person,
+  () => {
     editState.value = { ...person };
   }
 );

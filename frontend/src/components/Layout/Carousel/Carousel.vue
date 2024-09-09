@@ -13,13 +13,13 @@
     <Swiper
       :modules="modules"
       :class="useResponsiveClasses('swiper-el')"
-      loop
-      parallax
-      autoplay
       effect="fade"
       :fade-effect="{ crossFade: true }"
-      keyboard
+      autoplay
       a11y
+      loop
+      parallax
+      keyboard
       @swiper="(swiper) => swiperInstance = swiper"
       @real-index-change="onSlideChange"
       @touch-start="onTouch"
@@ -52,24 +52,15 @@ import { Swiper } from 'swiper/vue';
 import { ref, shallowRef } from 'vue';
 import { useResponsiveClasses } from '@/composables/use-responsive-classes';
 
-withDefaults(
-  defineProps<{
-    slides: number;
-    /**
-     * In milliseconds
-     */
-    slideDuration?: number;
-    progressBar?: boolean;
-    topProgressBar?: boolean;
-    pageBackdrop?: boolean;
-  }>(),
-  {
-    slideDuration: 7000,
-    progressBar: false,
-    topProgressBar: false,
-    pageBackdrop: false
-  }
-);
+const { slideDuration = 7000, progressBar, topProgressBar } = defineProps<{
+  slides: number;
+  /**
+   * In milliseconds
+   */
+  slideDuration?: number;
+  progressBar?: boolean;
+  topProgressBar?: boolean;
+}>();
 
 const emit = defineEmits<{
   'on-slide-change': [currentIndex: number, swiper: SwiperType];

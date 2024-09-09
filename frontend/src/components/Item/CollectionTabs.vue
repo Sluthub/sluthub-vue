@@ -8,12 +8,12 @@
         v-for="(baseItems, type) in children"
         :key="type"
         :value="type">
-        {{ type }} ({{ baseItems.length }})
+        {{ type }} ({{ baseItems?.length ?? '' }})
       </VTab>
     </VTabs>
     <h1
       v-if="!children"
-      class="text-h5 text-center">
+      class="text-center text-h5">
       {{ $t('collectionEmpty') }}
     </h1>
     <VWindow
@@ -28,7 +28,7 @@
             v-if="loading"
             :view-type="item.Type" /> -->
           <ItemGrid
-            :items="baseItems" />
+            :items="baseItems ?? []" />
         </VContainer>
       </VWindowItem>
     </VWindow>
@@ -37,15 +37,12 @@
 
 <script setup lang="ts">
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client';
-import { groupBy } from 'lodash-es';
-import { computed, ref } from 'vue';
+import { computed, shallowRef } from 'vue';
 
-const props = defineProps<{
+const { items } = defineProps<{
   items: BaseItemDto[];
 }>();
 
-const currentTab = ref(0);
-const children = computed(() => {
-  return groupBy(props.items, 'Type');
-});
+const currentTab = shallowRef(0);
+const children = computed(() => Object.groupBy(items, ({ Type }) => Type!));
 </script>

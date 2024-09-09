@@ -8,8 +8,8 @@
         v-if="!user"
         v-model="login.username"
         variant="outlined"
-        hide-details
         autofocus
+        hide-details
         :label="$t('username')"
         :rules="rules" />
       <VTextField
@@ -24,7 +24,7 @@
       <VCheckbox
         v-model="login.rememberMe"
         hide-details
-        class="mt-6 mb-6"
+        class="mb-6 mt-6"
         color="primary"
         :label="$t('rememberMe')" />
       <VRow
@@ -77,7 +77,7 @@ import { fetchIndexPage } from '@/utils/items';
 import { remote } from '@/plugins/remote';
 import { getJSONConfig } from '@/utils/external-config';
 
-const props = defineProps<{ user?: UserDto }>();
+const { user } = defineProps<{ user?: UserDto }>();
 
 defineEmits<{
   change: [];
@@ -100,11 +100,11 @@ const rules = [
  * Login the user into the client
  */
 async function userLogin(): Promise<void> {
-  if (props.user) {
+  if (user) {
     /**
      * If we have a user from the public user selector, set it as login
      */
-    login.value.username = props.user.Name || '';
+    login.value.username = user.Name ?? '';
   }
 
   loading.value = true;

@@ -1,7 +1,9 @@
 <template>
-  <VAvatar :size="size">
+  <VAvatar
+    :size="size">
     <JImg
       :src="url"
+      :alt="$t('userImage')"
       :transition-props="{
         mode: 'out-in'
       }">
@@ -23,22 +25,24 @@ import type { UserDto } from '@jellyfin/sdk/lib/generated-client';
 import { computed } from 'vue';
 import { remote } from '@/plugins/remote';
 
-const props = withDefaults(
-  defineProps<{
-    user: UserDto;
-    size?: number;
-    quality?: number;
-    rounded?: boolean;
-  }>(),
-  { size: 64, quality: 90, rounded: false }
-);
+/**
+ * TODO: In reality, rounded is unnecessary since it can be passed as fallthrough,
+ * but it needs to be here since VAvatar expects a truly boolean and fallthroughs are passed as strings.
+ * It also can't be passed as a prop, it needs to not specify a prop for it to work properly
+ * in AppBar's button.
+ */
+const { user, size = 64, rounded } = defineProps<{
+  user: UserDto;
+  size?: number;
+  rounded?: boolean;
+}>();
 
 const url = computed(() => {
-  return props.user.Id && props.user.PrimaryImageTag && remote.sdk.api?.basePath
-    ? `${remote.sdk.api.basePath}/Users/${props.user.Id}/Images/Primary/?tag=${props.user.PrimaryImageTag}&quality=${props.quality}`
+  return user.Id && user.PrimaryImageTag && remote.sdk.api?.basePath
+    ? `${remote.sdk.api.basePath}/Users/${user.Id}/Images/Primary/?tag=${user.PrimaryImageTag}`
     : undefined;
 });
 const iconSize = computed(() => {
-  return props.size * 0.75;
+  return size * 0.75;
 });
 </script>

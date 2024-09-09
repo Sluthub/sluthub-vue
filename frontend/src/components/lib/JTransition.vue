@@ -1,36 +1,43 @@
 <template>
   <component
-    :is="props.group ? TransitionGroup : Transition"
+    :is="group ? TransitionGroup : Transition"
     class="j-transition"
-    v-bind="mergeProps($props, $attrs)"
-    :name="prefersNoMotion || disabled || (isSlow && !important) ? undefined : `j-transition-${props.name}`">
+    v-bind="$attrs"
+    :name="forcedDisable || disabled ? undefined : `j-transition-${name}`"
+    @before-leave="leaving = true"
+    @after-leave="onNoLeave"
+    @leave-cancelled="onNoLeave">
     <slot />
   </component>
 </template>
 
-<script setup lang="ts">
-import { Transition, TransitionGroup, type TransitionProps, mergeProps } from 'vue';
+<script lang="ts">
+import { Transition, TransitionGroup, type TransitionProps, shallowRef, computed } from 'vue';
 import { prefersNoMotion, isSlow } from '@/store';
+import { usePausableEffect } from '@/composables/use-pausable-effect';
 
-export interface JTransitionProps extends BetterOmit<TransitionProps, 'name'> {
+interface Props {
   name?: 'fade' | 'rotated-zoom' | 'slide-y' | 'slide-y-reverse' | 'slide-x' | 'slide-x-reverse';
   /**
-   * Transition group props
-   */
-  tag?: string;
-  moveClass?: string;
-  /**
-   * JTransition custom props
+   * If the component needs to be rendered as a TransitionGroup
    */
   group?: boolean;
-  disabled?: boolean;
   /**
-   * Run the transition even on low FPS scenarios
+   * If the transition should be disabled
    */
-  important?: boolean;
+  disabled?: boolean;
 }
 
-const props = withDefaults(defineProps<JTransitionProps>(), { name: 'fade', group: undefined, disabled: undefined });
+export type JTransitionProps = TransitionProps & Props;
+const forcedDisable = computed(() => prefersNoMotion.value || isSlow.value);
+</script>
+
+<script setup lang="ts">
+const { name = 'fade', group, disabled } = defineProps<Props>();
+const leaving = shallowRef(false);
+const onNoLeave = () => leaving.value = false;
+
+usePausableEffect(leaving);
 </script>
 
 <!-- TODO: Set scoped and remove .j-transition* prefix after: https://github.com/vuejs/core/issues/5148 -->

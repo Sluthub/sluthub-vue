@@ -6,29 +6,34 @@
       as="image"
       :href="src"
       @load="onLoad"
-      @error="onError" >
+      @error="onError">
     <JTransition
-      v-bind="isObj(props.transitionProps) ? props.transitionProps : undefined"
-      :disabled="!props.transitionProps">
+      v-bind="isObj(transitionProps) ? transitionProps : undefined"
+      :disabled="!transitionProps">
       <img
         v-if="shown"
-        key="1"
+        :src="src"
+        :alt="alt"
         class="j-img"
-        v-bind="mergeProps($props, $attrs)"
-        :alt="$props.alt" >
+        loading="eager"
+        decoding="async"
+        v-bind="$attrs">
       <template v-else>
         <slot
           v-if="$slots.placeholder"
-          key="2"
           name="placeholder" />
         <slot
           v-else-if="loading"
-          key="3"
-          name="loading" />
+          name="loading">
+          <VProgressCircular indeterminate />
+        </slot>
         <slot
           v-else-if="error"
-          key="4"
-          name="error" />
+          name="error">
+          <VIcon>
+            <IMdiImageBrokenVariant />
+          </VIcon>
+        </slot>
       </template>
     </JTransition>
   </template>
@@ -39,20 +44,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed, shallowRef, watch, type ImgHTMLAttributes, mergeProps } from 'vue';
-import { isObj } from '@/utils/validation';
-import JTransition, { type JTransitionProps } from '@/components/lib/JTransition.vue';
-
 /**
+ * @component
  * In this component, we use a link element for image preload.
  * The link element is the browser standard for resource prefetching and we can use it everytime, regardless the
  * underlying element type being used.
  *
  * Given the img at loading is v-show'ed to false (display: none), the load events doesn't trigger either
  */
+import { computed, shallowRef, watch } from 'vue';
+import { isObj } from '@/utils/validation';
+import JTransition, { type JTransitionProps } from '@/components/lib/JTransition.vue';
 
-interface Props extends BetterOmit<ImgHTMLAttributes, 'src'> {
-  src?: string | null;
+/**
+ * We don't want <link> to inherit any attributes and the component might not render any
+ * element at all, printing unnecessary warnings in development.
+ */
+defineOptions({
+  inheritAttrs: false
+});
+
+const { src, alt, once, transitionProps = true } = defineProps<{
+  src?: string;
+  alt: string;
   /**
    * If this is true, the image won't follow the load procedures after a src change and the image will simply be
    * updated in place without showing any of the slots.
@@ -65,27 +79,17 @@ interface Props extends BetterOmit<ImgHTMLAttributes, 'src'> {
    * @default true
    */
   transitionProps?: JTransitionProps | boolean;
-}
+}>();
 
-/**
- * We don't want <link> to inherit any attributes and the component might not render any
- * element at all, printing unnecessary warnings in development.
- */
-defineOptions({
-  inheritAttrs: false
-});
-
-const props = withDefaults(defineProps<Props>(), { transitionProps: true });
 const loading = shallowRef(true);
 const error = shallowRef(false);
-
 const shown = computed(() => !loading.value && !error.value);
 
 /**
  * Event handler for the loadstart event
  */
 function onLoadStart(): void {
-  if (!props.once) {
+  if (!once) {
     loading.value = true;
   }
 }
@@ -106,7 +110,7 @@ function onError(): void {
   error.value = true;
 }
 
-watch(() => props.src, onLoadStart);
+watch(() => src, onLoadStart);
 </script>
 
 <style scoped>

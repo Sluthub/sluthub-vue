@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ES2022",
+    "target": "ESNext",
+    "module": "Preserve",
     "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -36,7 +36,8 @@
   },
   "vueCompilerOptions": {
     "strictTemplates": true,
-    "htmlAttributes": ["aria-*", "data-*"]
+    "htmlAttributes": ["aria-*", "data-*"],
+    "fallthroughAttributes": true
   },
   "include": [
     "src/**/*.ts",
