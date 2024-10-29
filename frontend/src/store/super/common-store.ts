@@ -1,5 +1,5 @@
 import { useStorage, type RemovableRef } from '@vueuse/core';
-import { isRef, reactive } from 'vue';
+import { reactive, toValue } from 'vue';
 import { mergeExcludingUnknown } from '@/utils/data-manipulation';
 import { isNil } from '@/utils/validation';
 
@@ -7,11 +7,11 @@ export type Persistence = 'localStorage' | 'sessionStorage';
 
 export abstract class CommonStore<T extends object> {
   protected readonly _storeKey: string;
-  private readonly _defaultState: T;
+  private readonly _defaultState: () => T;
   private readonly _internalState: T | RemovableRef<T>;
 
   protected get _state(): T {
-    return isRef(this._internalState) ? this._internalState.value : this._internalState;
+    return toValue(this._internalState);
   }
 
   protected readonly _reset = (): void => {
@@ -20,19 +20,19 @@ export abstract class CommonStore<T extends object> {
 
   protected constructor(storeKey: string, defaultState: T, persistence?: Persistence) {
     this._storeKey = storeKey;
-    this._defaultState = defaultState;
+    this._defaultState = () => defaultState;
 
     let storage;
 
     if (persistence === 'localStorage') {
       storage = window.localStorage;
     } else if (persistence === 'sessionStorage') {
-      storage = sessionStorage;
+      storage = window.sessionStorage;
     }
 
     this._internalState = isNil(storage)
-      ? reactive(structuredClone(defaultState)) as T
-      : useStorage(storeKey, structuredClone(defaultState), storage, {
+      ? reactive(this._defaultState()) as T
+      : useStorage(storeKey, this._defaultState(), storage, {
         mergeDefaults: (storageValue, defaults) =>
           mergeExcludingUnknown(storageValue, defaults)
       });

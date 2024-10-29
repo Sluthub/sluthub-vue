@@ -1,0 +1,10 @@
+{
+  "extends": "./typescript/base.json",
+  "compilerOptions": {
+    "baseUrl": "."
+  },
+  "include": [
+    "eslint/**/*.ts",
+    "*.ts"
+  ]
+}

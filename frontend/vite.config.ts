@@ -15,9 +15,13 @@ import Components from 'unplugin-vue-components/vite';
 import UnoCSS from 'unocss/vite';
 import VueRouter from 'unplugin-vue-router/vite';
 import { defineConfig } from 'vite';
+/**
+ * TODO: Replace with @jellyfin-vue/vite-plugins after https://github.com/vitejs/vite/issues/5370
+ * is fixed
+ */
+import { JellyfinVueAnalysis, JellyfinVueChunking } from '../packages/vite-plugins';
 import { entrypoints, localeFilesFolder, srcRoot } from './scripts/paths';
 import virtualModules from './scripts/virtual-modules';
-import { JellyfinVueAnalysis } from './scripts/plugins/analysis';
 
 export default defineConfig({
   appType: 'spa',
@@ -25,6 +29,7 @@ export default defineConfig({
   cacheDir: '../node_modules/.cache/vite',
   plugins: [
     JellyfinVueAnalysis(),
+    JellyfinVueChunking(),
     Virtual(virtualModules),
     VueRouter({
       dts: './types/global/routes.d.ts',
@@ -64,7 +69,8 @@ export default defineConfig({
       compositionOnly: true,
       fullInstall: false,
       forceStringify: true,
-      include: localeFilesFolder
+      include: localeFilesFolder,
+      dropMessageCompiler: true
     }),
     UnoCSS(),
     VueDevTools()
@@ -77,7 +83,6 @@ export default defineConfig({
     /**
      * Disable chunk size warnings
      */
-    chunkSizeWarningLimit: Number.NaN,
     cssCodeSplit: true,
     cssMinify: 'lightningcss',
     modulePreload: false,
@@ -89,28 +94,7 @@ export default defineConfig({
         index: entrypoints.index
       },
       output: {
-        chunkFileNames: (chunkInfo) => {
-          /**
-           * This is the default value: https://rollupjs.org/configuration-options/#output-chunkfilenames
-           */
-          return chunkInfo.name === 'validation' ? 'assets/common-[hash].js' : '[name]-[hash].js';
-        },
-        validate: true,
-        /**
-         * This is the first thing that should be debugged when there are issues
-         * withe the bundle. Check these issues:
-         * - https://github.com/vitejs/vite/issues/5142
-         * - https://github.com/evanw/esbuild/issues/399
-         * - https://github.com/rollup/rollup/issues/3888
-         */
-        manualChunks(id) {
-          if (
-            id.includes('virtual:locales')
-            || id.includes('@intlify/unplugin-vue-i18n/messages')
-          ) {
-            return 'assets/locales';
-          }
-        }
+        validate: true
       }
     }
   },

@@ -280,7 +280,7 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
           sub =>
             sub.Type === MediaStreamType.Subtitle
             && (sub.DeliveryMethod === SubtitleDeliveryMethod.Encode
-            || sub.DeliveryMethod === SubtitleDeliveryMethod.External)
+              || sub.DeliveryMethod === SubtitleDeliveryMethod.External)
         )
         .map(sub => ({
           label: sub.DisplayTitle ?? 'Undefined',
@@ -297,40 +297,44 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   }
 
   /**
-   * Filters the native subtitles
-   *
-   * As our profile requires either SSA, PGS or VTT, if it's not SSA or PGS it'll be VTT.
-   * This is done this way as server sends as "Codec" the initial value of the track, so it can be webvtt, subrip, srt...
-   * This is easier to filter out the SSA subs
+   * Filters the external subtitle tracks
    */
-  public get currentItemVttParsedSubtitleTracks(): PlaybackExternalTrack[] {
+  public get currentItemExternalParsedSubtitleTracks(): PlaybackExternalTrack[] {
     return (
       this.currentItemParsedSubtitleTracks?.filter(
         (sub): sub is PlaybackExternalTrack =>
-          !!sub.codec && sub.codec !== 'ass' && sub.codec !== 'ssa' && sub.codec !== 'pgssub' && !!sub.src
+          sub.codec !== undefined
+          && sub.src !== undefined
       ) ?? []
+    );
+  }
+
+  public get currentItemVttParsedSubtitleTracks(): PlaybackExternalTrack[] {
+    return (
+      this.currentItemExternalParsedSubtitleTracks.filter(
+        sub =>
+          sub.codec === 'vtt'
+          || sub.codec === 'srt'
+          || sub.codec === 'subrip'
+      )
     );
   }
 
   public get currentItemAssParsedSubtitleTracks(): PlaybackExternalTrack[] {
     return (
-      this.currentItemParsedSubtitleTracks?.filter(
-        (sub): sub is PlaybackExternalTrack =>
-          !!sub.codec
-          && (sub.codec === 'ass' || sub.codec === 'ssa')
-          && !!sub.src
-      ) ?? []
+      this.currentItemExternalParsedSubtitleTracks.filter(
+        sub =>
+          sub.codec === 'ass'
+          || sub.codec === 'ssa'
+      )
     );
   }
 
   public get currentItemPgsParsedSubtitleTracks(): PlaybackExternalTrack[] {
     return (
-      this.currentItemParsedSubtitleTracks?.filter(
-        (sub): sub is PlaybackExternalTrack =>
-          !!sub.codec
-          && (sub.codec === 'pgssub')
-          && !!sub.src
-      ) ?? []
+      this.currentItemExternalParsedSubtitleTracks.filter(
+        sub => sub.codec === 'pgssub'
+      )
     );
   }
 
@@ -1129,12 +1133,12 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
             }
           };
 
-          for (const [action, handler] of Object.entries(actionHandlers)) {
+          for (const action in actionHandlers) {
             try {
               window.navigator.mediaSession.setActionHandler(
                 action as MediaSessionAction,
                 /* eslint-disable-next-line unicorn/no-null */
-                add ? handler : null
+                add ? actionHandlers[action as keyof typeof actionHandlers] ?? null : null
               );
             } catch {
               console.error(
@@ -1217,9 +1221,9 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
           oldVal.currentSubtitleStreamIndex
           !== newVal.currentSubtitleStreamIndex
           && (oldVal.currentSubtitleTrack?.DeliveryMethod
-          === SubtitleDeliveryMethod.Encode
-          || newVal.currentSubtitleTrack?.DeliveryMethod
-          === SubtitleDeliveryMethod.Encode)
+            === SubtitleDeliveryMethod.Encode
+            || newVal.currentSubtitleTrack?.DeliveryMethod
+            === SubtitleDeliveryMethod.Encode)
         ) {
           /**
            * We need to set a new media source when:

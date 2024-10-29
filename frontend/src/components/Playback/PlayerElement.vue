@@ -4,25 +4,29 @@
       :to="videoContainerRef"
       :disabled="!videoContainerRef"
       defer>
-      <Component
-        :is="mediaElementType"
-        v-show="mediaElementType === 'video' && videoContainerRef"
-        ref="mediaElementRef"
-        :poster="String(posterUrl)"
-        autoplay
-        crossorigin
-        playsinline
-        :loop="playbackManager.isRepeatingOnce"
-        :class="{ 'uno-object-fill': playerElement.isStretched.value }"
-        @loadeddata="onLoadedData">
-        <track
-          v-for="sub in playbackManager.currentItemVttParsedSubtitleTracks"
-          :key="`${playbackManager.currentSourceUrl}-${sub.srcIndex}`"
-          kind="subtitles"
-          :label="sub.label"
-          :srclang="sub.srcLang"
-          :src="sub.src">
-      </Component>
+      <div class="uno-my-auto">
+        <Component
+          :is="mediaElementType"
+          v-show="mediaElementType === 'video' && videoContainerRef"
+          ref="mediaElementRef"
+          :poster="String(posterUrl)"
+          autoplay
+          crossorigin
+          playsinline
+          :loop="playbackManager.isRepeatingOnce"
+          :class="{ 'uno-object-fill': playerElement.isStretched.value, 'uno-max-h-100vh': true}"
+          @loadeddata="onLoadedData">
+          <track
+            v-for="sub in playbackManager.currentItemVttParsedSubtitleTracks"
+            :key="`${playbackManager.currentSourceUrl}-${sub.srcIndex}`"
+            kind="subtitles"
+            :label="sub.label"
+            :srclang="sub.srcLang"
+            :src="sub.src">
+        </Component>
+        <SubtitleTrack
+          v-if="subtitleSettings.state.enabled && playerElement.currentExternalSubtitleTrack?.parsed !== undefined" />
+      </div>
     </Teleport>
   </template>
 </template>
@@ -41,6 +45,7 @@ import { playbackManager } from '@/store/playback-manager';
 import { playerElement, videoContainerRef } from '@/store/player-element';
 import { getImageInfo } from '@/utils/images';
 import { isNil } from '@/utils/validation';
+import { subtitleSettings } from '@/store/client-settings/subtitle-settings';
 
 const { t } = useI18n();
 let busyWebAudio = false;
@@ -190,7 +195,6 @@ watch(mediaElementRef, async () => {
       hls.on(Events.ERROR, onHlsEror);
     }
 
-    console.log('attach called');
     await attachWebAudio(mediaElementRef.value);
   }
 });
@@ -205,8 +209,8 @@ watch(
     if (
       mediaElementRef.value
       && (!newUrl
-      || playbackManager.currentMediaSource?.SupportsDirectPlay
-      || !hls)
+        || playbackManager.currentMediaSource?.SupportsDirectPlay
+        || !hls)
     ) {
       /**
        * For the video case, Safari iOS doesn't support hls.js but supports native HLS.
