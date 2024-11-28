@@ -477,8 +477,7 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   }
 
   public set currentVolume(newVolume: number) {
-    newVolume = newVolume > 100 ? 100 : newVolume;
-    newVolume = newVolume < 0 ? 0 : newVolume;
+    newVolume = Math.min(newVolume, 100);
     this.isMuted = newVolume === 0;
 
     if (this._state.isRemotePlayer) {
@@ -838,10 +837,6 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
       itemId
     }));
 
-    if (!items.value) {
-      throw new Error('No items found');
-    }
-
     for (const item of items.value) {
       await this.addToQueue(item);
     }
@@ -1013,7 +1008,7 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   };
 
   public constructor() {
-    super('playbackManager', {
+    super('playbackManager', () => ({
       status: PlaybackStatus.Stopped,
       currentSourceUrl: undefined,
       currentItemIndex: undefined,
@@ -1034,7 +1029,7 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
       playbackInitiator: undefined,
       playbackInitMode: InitMode.Unknown,
       playbackSpeed: 1
-    });
+    }));
     /**
      * Logic is divided by concerns and scope. Watchers for callbacks
      * that rely on the same variables might not be together. Categories:
@@ -1069,10 +1064,10 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
      * == MediaSession API: https://developer.mozilla.org/en-US/docs/Web/API/MediaSession ==
      */
     watchEffect(() => {
-      if (window.navigator.mediaSession) {
+      if (globalThis.navigator.mediaSession) {
         const { t } = i18n;
 
-        window.navigator.mediaSession.metadata = this.currentItem
+        globalThis.navigator.mediaSession.metadata = this.currentItem
           ? new MediaMetadata({
             title: this.currentItem.Name ?? t('unknownTitle'),
             artist: this.currentItem.AlbumArtist ?? t('unknownArtist'),
@@ -1090,19 +1085,19 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
       }
     });
     watchEffect(() => {
-      if (window.navigator.mediaSession) {
+      if (globalThis.navigator.mediaSession) {
         switch (this.status) {
           case PlaybackStatus.Playing: {
-            window.navigator.mediaSession.playbackState = 'playing';
+            globalThis.navigator.mediaSession.playbackState = 'playing';
             break;
           }
           case PlaybackStatus.Paused:
           case PlaybackStatus.Buffering: {
-            window.navigator.mediaSession.playbackState = 'paused';
+            globalThis.navigator.mediaSession.playbackState = 'paused';
             break;
           }
           default: {
-            window.navigator.mediaSession.playbackState = 'none';
+            globalThis.navigator.mediaSession.playbackState = 'none';
           }
         }
       }
@@ -1117,10 +1112,8 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
           = oldValue === PlaybackStatus.Error
           || oldValue === PlaybackStatus.Stopped;
 
-        if (window.navigator.mediaSession && (remove || add)) {
-          const actionHandlers: {
-            [key in MediaSessionAction]?: MediaSessionActionHandler;
-          } = {
+        if (globalThis.navigator.mediaSession && (remove || add)) {
+          const actionHandlers: Partial<Record<MediaSessionAction, MediaSessionActionHandler>> = {
             play: this.unpause,
             pause: this.pause,
             previoustrack: () => { this.setPreviousItem(); },
@@ -1135,7 +1128,7 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
 
           for (const action in actionHandlers) {
             try {
-              window.navigator.mediaSession.setActionHandler(
+              globalThis.navigator.mediaSession.setActionHandler(
                 action as MediaSessionAction,
                 /* eslint-disable-next-line unicorn/no-null */
                 add ? actionHandlers[action as keyof typeof actionHandlers] ?? null : null
@@ -1157,12 +1150,12 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
         || this.status === PlaybackStatus.Stopped;
 
       if (
-        window.navigator.mediaSession
+        globalThis.navigator.mediaSession
         && this.currentTime <= this.currentItemRuntime
       ) {
         const duration = this.currentItemRuntime / 1000;
 
-        window.navigator.mediaSession.setPositionState(
+        globalThis.navigator.mediaSession.setPositionState(
           remove
             ? undefined
             : {

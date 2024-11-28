@@ -56,15 +56,15 @@ jobs:
     runs-on: ${{ matrix.platform }}-latest
     steps:
       - name: Checkout ⬇️
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
         with:
           ref: ${{ inputs.commit || github.sha }}
           show-progress: false
 
       - name: Setup node environment ⚙️
-        uses: actions/setup-node@v4.0.4
+        uses: actions/setup-node@v4.1.0
         with:
-          node-version: 20
+          node-version: lts/*
           check-latest: true
           cache: 'npm'
 
@@ -87,7 +87,7 @@ jobs:
         run: npm run build
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.4.3
+        uses: actions/attest-build-provenance@v1.4.4
         continue-on-error: true
         with:
           subject-path: ${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_PATH }}
@@ -173,7 +173,7 @@ jobs:
 
     steps:
       - name: Checkout ⬇️
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
         with:
           ref: ${{ inputs.commit || github.sha }}
           show-progress: false
@@ -185,7 +185,7 @@ jobs:
         uses: docker/setup-buildx-action@v3.7.1
 
       - name: Build images 🛠️
-        uses: docker/build-push-action@v6.9.0
+        uses: docker/build-push-action@v6.10.0
         id: image
         with:
           context: .
@@ -211,7 +211,7 @@ jobs:
           path: docker_image.tar
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.4.3
+        uses: actions/attest-build-provenance@v1.4.4
         continue-on-error: true
         with:
           subject-path: docker_image.tar
@@ -239,10 +239,12 @@ jobs:
       - name: Extract built client from Docker image 🗜️
         run: |
           docker load < docker_image.tar
-          docker cp $(docker create --name jf $(docker images --filter=reference='${{ env.REGISTRY_IMAGE }}' -q | head -n 1)):/usr/share/nginx/html/ ./dist
+          IMAGE_SHA=$(docker images --filter=reference='${{ env.REGISTRY_IMAGE }}' -q | head -n 1)
+          ASSETS=$(docker inspect $IMAGE_SHA --format='{{range .Config.Env}}{{println .}}{{end}}' | grep ^ASSETS= | cut -d '=' -f2-)
+          docker cp $(docker create --name jf $IMAGE_SHA):$ASSETS/ ./dist
 
       - name: Create provenance attestation 🔏
-        uses: actions/attest-build-provenance@v1.4.3
+        uses: actions/attest-build-provenance@v1.4.4
         continue-on-error: true
         with:
           subject-path: dist
@@ -270,7 +272,7 @@ jobs:
           path: /tmp/${{ env.REGISTRY_IMAGE }}/cache/
   
       - name: Checkout ⬇️
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
         with:
           ref: ${{ inputs.commit || github.sha }}
           show-progress: false
@@ -295,7 +297,7 @@ jobs:
           password: ${{ secrets.JF_BOT_TOKEN }}
 
       - name: Create multiplatform image ${{ inputs.push && 'and push 🛠️⬆️' || '🛠️' }} 
-        uses: docker/build-push-action@v6.9.0
+        uses: docker/build-push-action@v6.10.0
         id: image
         with:
           context: .

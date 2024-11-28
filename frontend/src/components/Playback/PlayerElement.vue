@@ -4,7 +4,7 @@
       :to="videoContainerRef"
       :disabled="!videoContainerRef"
       defer>
-      <div class="uno-my-auto">
+      <div class="uno-relative">
         <Component
           :is="mediaElementType"
           v-show="mediaElementType === 'video' && videoContainerRef"
@@ -14,7 +14,11 @@
           crossorigin
           playsinline
           :loop="playbackManager.isRepeatingOnce"
-          :class="{ 'uno-object-fill': playerElement.isStretched.value, 'uno-max-h-100vh': true}"
+          class="uno-h-full uno-max-h-100vh"
+          :class="{
+            'uno-object-fill': playerElement.isStretched.value,
+            'uno-w-screen': playerElement.isStretched.value
+          }"
           @loadeddata="onLoadedData">
           <track
             v-for="sub in playbackManager.currentItemVttParsedSubtitleTracks"
@@ -95,7 +99,7 @@ async function detachWebAudio(): Promise<void> {
         mediaWebAudio.gainNode.gain.setValueAtTime(mediaWebAudio.gainNode.gain.value, mediaWebAudio.context.currentTime);
         mediaWebAudio.gainNode.gain.exponentialRampToValueAtTime(0.0001, mediaWebAudio.context.currentTime + 1.5);
         await nextTick();
-        await new Promise(resolve => window.setTimeout(resolve));
+        await new Promise(resolve => globalThis.setTimeout(resolve));
         mediaWebAudio.gainNode.disconnect();
         mediaWebAudio.gainNode = undefined;
       }

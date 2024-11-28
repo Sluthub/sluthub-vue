@@ -15,19 +15,19 @@ export abstract class CommonStore<T extends object> {
   }
 
   protected readonly _reset = (): void => {
-    Object.assign(this._state, this._defaultState);
+    Object.assign(this._state, this._defaultState());
   };
 
-  protected constructor(storeKey: string, defaultState: T, persistence?: Persistence) {
+  protected constructor(storeKey: string, defaultState: () => T, persistence?: Persistence) {
     this._storeKey = storeKey;
-    this._defaultState = () => defaultState;
+    this._defaultState = defaultState;
 
     let storage;
 
     if (persistence === 'localStorage') {
-      storage = window.localStorage;
+      storage = globalThis.localStorage;
     } else if (persistence === 'sessionStorage') {
-      storage = window.sessionStorage;
+      storage = globalThis.sessionStorage;
     }
 
     this._internalState = isNil(storage)

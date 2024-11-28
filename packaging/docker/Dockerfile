@@ -1,7 +1,7 @@
 ## This dockerfile builds the client entirely in a Docker context
 
 # slim image can't be used since we need git to fetch the commit hash
-FROM node:20-slim AS build
+FROM node:lts-slim AS build
 
 # Set build arguments
 ARG IS_STABLE=0
@@ -21,14 +21,18 @@ RUN npm ci --no-audit && npm run build
 # Deploy built distribution to nginx
 FROM nginx:stable-alpine-slim
 
-COPY packaging/docker/contents/nginx.conf /etc/nginx/conf.d/default.conf
-COPY packaging/docker/contents/*.sh /
-COPY LICENSE /usr/share/licenses/jellyfin-vue.LICENSE
+ENV ASSETS=/usr/share/nginx/html
+ENV NGINX_DEFAULT_SITE_CONFIG=/etc/nginx/conf.d/default.conf
 
-RUN rm -rf /usr/share/nginx/html/*
-COPY --from=build /app/frontend/dist/ /usr/share/nginx/html/
+COPY packaging/docker/contents/nginx.conf "$NGINX_DEFAULT_SITE_CONFIG"
+COPY packaging/docker/contents/*.sh /
+COPY LICENSE /usr/share/licenses/jellyfin-vue
+
+RUN rm -rf "$ASSETS"/*
+COPY --from=build /app/frontend/dist/ "$ASSETS"
 RUN chmod +x /*.sh && /postunpack.sh && rm /postunpack.sh
 USER nginx
+WORKDIR "$ASSETS"
 
 EXPOSE 80
 

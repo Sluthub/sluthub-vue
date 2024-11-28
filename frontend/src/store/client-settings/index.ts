@@ -81,11 +81,11 @@ class ClientSettingsStore extends SyncedStore<ClientSettingsState> {
   };
 
   public constructor() {
-    super('clientSettings', {
+    super('clientSettings', () => ({
       typography: 'default',
       darkMode: 'auto',
       locale: 'auto'
-    }, 'localStorage');
+    }), 'localStorage');
     /**
      * == WATCHERS ==
      */
@@ -102,7 +102,7 @@ class ClientSettingsStore extends SyncedStore<ClientSettingsState> {
      * Vuetify theme change
      */
     watchImmediate(this.currentTheme, () => {
-      window.requestAnimationFrame(() => {
+      globalThis.requestAnimationFrame(() => {
         vuetify.theme.global.name.value
           = this.currentTheme.value;
       });
