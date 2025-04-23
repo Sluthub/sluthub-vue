@@ -75,16 +75,24 @@
             v-model="activeTab"
             class="bg-transparent">
             <VWindowItem :value="0">
-              <ArtistTab :releases="discography" />
+              <ArtistTab
+                :tracks-by-release
+                :releases="discography" />
             </VWindowItem>
             <VWindowItem :value="1">
-              <ArtistTab :releases="albums" />
+              <ArtistTab
+                :tracks-by-release
+                :releases="albums" />
             </VWindowItem>
             <VWindowItem :value="2">
-              <ArtistTab :releases="eps" />
+              <ArtistTab
+                :tracks-by-release
+                :releases="eps" />
             </VWindowItem>
             <VWindowItem :value="3">
-              <ArtistTab :releases="singles" />
+              <ArtistTab
+                :tracks-by-release
+                :releases="singles" />
             </VWindowItem>
             <VWindowItem :value="4">
               <VContainer>
@@ -154,11 +162,11 @@ import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 import { getUserLibraryApi } from '@jellyfin/sdk/lib/utils/api/user-library-api';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { msToTicks } from '@/utils/time';
-import { defaultSortOrder as sortBy } from '@/utils/items';
-import { useBaseItem } from '@/composables/apis';
-import { useItemBackdrop } from '@/composables/backdrop';
-import { useItemPageTitle } from '@/composables/page-title';
+import { msToTicks } from '#/utils/time';
+import { defaultSortOrder as sortBy } from '#/utils/items';
+import { useBaseItem } from '#/composables/apis';
+import { useItemBackdrop } from '#/composables/backdrop';
+import { useItemPageTitle } from '#/composables/page-title';
 
 const SINGLE_MAX_LENGTH_MS = 600_000;
 const EP_MAX_LENGTH_MS = 1_800_000;
@@ -167,35 +175,61 @@ const route = useRoute('/artist/[itemId]');
 
 const activeTab = ref(0);
 
-const { data: item } = await useBaseItem(getUserLibraryApi, 'getItem')(() => ({
-  itemId: route.params.itemId
-}));
-const { data: relatedItems } = await useBaseItem(getLibraryApi, 'getSimilarItems')(() => ({
-  itemId: route.params.itemId,
-  limit: 5
-}));
-const { data: discography } = await useBaseItem(getItemsApi, 'getItems')(() => ({
-  albumArtistIds: [route.params.itemId],
-  sortBy,
-  sortOrder: [SortOrder.Descending],
-  recursive: true,
-  includeItemTypes: [BaseItemKind.MusicAlbum]
-}));
-const { data: appearances } = await useBaseItem(getItemsApi, 'getItems')(() => ({
-  contributingArtistIds: [route.params.itemId],
-  excludeItemIds: [route.params.itemId],
-  sortBy,
-  sortOrder: [SortOrder.Descending],
-  recursive: true,
-  includeItemTypes: [BaseItemKind.MusicAlbum]
-}));
-const { data: musicVideos } = await useBaseItem(getItemsApi, 'getItems')(() => ({
-  artistIds: [route.params.itemId],
-  sortBy,
-  sortOrder: [SortOrder.Descending],
-  recursive: true,
-  includeItemTypes: [BaseItemKind.MusicVideo]
-}));
+const [
+  { data: item },
+  { data: relatedItems },
+  { data: discography },
+  { data: appearances },
+  { data: musicVideos }
+] = await Promise.all([
+  useBaseItem(getUserLibraryApi, 'getItem')(() => ({
+    itemId: route.params.itemId
+  })),
+  useBaseItem(getLibraryApi, 'getSimilarItems')(() => ({
+    itemId: route.params.itemId,
+    limit: 5
+  })),
+  useBaseItem(getItemsApi, 'getItems')(() => ({
+    albumArtistIds: [route.params.itemId],
+    sortBy,
+    sortOrder: [SortOrder.Descending],
+    recursive: true,
+    includeItemTypes: [BaseItemKind.MusicAlbum]
+  })),
+  useBaseItem(getItemsApi, 'getItems')(() => ({
+    contributingArtistIds: [route.params.itemId],
+    excludeItemIds: [route.params.itemId],
+    sortBy,
+    sortOrder: [SortOrder.Descending],
+    recursive: true,
+    includeItemTypes: [BaseItemKind.MusicAlbum]
+  })),
+  useBaseItem(getItemsApi, 'getItems')(() => ({
+    artistIds: [route.params.itemId],
+    sortBy,
+    sortOrder: [SortOrder.Descending],
+    recursive: true,
+    includeItemTypes: [BaseItemKind.MusicVideo]
+  }))
+]);
+
+const all_tracks = await Promise.all(discography.value.map(album =>
+  useBaseItem(getItemsApi, 'getItems')(() => ({
+    parentId: album.Id,
+    sortBy: ['SortName'],
+    sortOrder: [SortOrder.Ascending]
+  })))
+);
+
+const tracksByRelease = computed(() => {
+  const map = new Map<BaseItemDto['Id'], BaseItemDto[]>();
+
+  for (let i = 0; i < discography.value.length; i++) {
+    map.set(discography.value[i]!.Id, all_tracks[i]!.data.value);
+  }
+
+  return map;
+});
 
 const singles = computed<BaseItemDto[]>(() =>
   discography.value.filter(

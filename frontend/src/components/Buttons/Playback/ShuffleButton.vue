@@ -2,14 +2,14 @@
   <VBtn
     v-bind="$attrs"
     icon
-    :color="playbackManager.isShuffling ? 'primary' : undefined"
+    :color="playbackManager.isShuffling.value ? 'primary' : undefined"
     @click="playbackManager.toggleShuffle">
-    <VIcon v-bind="$attrs">
-      <IMdiShuffle />
-    </VIcon>
+    <JIcon
+      v-bind="$attrs"
+      class="i-mdi:shuffle" />
   </VBtn>
 </template>
 
 <script setup lang="ts">
-import { playbackManager } from '@/store/playback-manager';
+import { playbackManager } from '#/store/playback-manager';
 </script>

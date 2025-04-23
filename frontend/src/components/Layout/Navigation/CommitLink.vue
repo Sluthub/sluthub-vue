@@ -2,16 +2,19 @@
   <VListItem
     v-if="commit_hash"
     :title="'#' + commit_hash.slice(0, 7)"
-    :prepend-icon="IMdiGithub"
     :href="link"
     target="_blank"
-    rel="noopener noreferrer" />
+    rel="noopener noreferrer">
+    <template #prepend>
+      <JIcon
+        class="i-mdi:github uno-w-10" />
+    </template>
+  </VListItem>
 </template>
 
 <script setup lang="ts">
-import IMdiGithub from 'virtual:icons/mdi/github';
 import { commit_hash } from 'virtual:commit';
-import { sanitizeHtml } from '@/utils/html';
+import { sanitizeHtml } from '@jellyfin-vue/shared/html';
 
 const link = commit_hash ? sanitizeHtml(`https://github.com/sluthub/jellyfin-vue/commit/${commit_hash}`) : undefined;
 </script>

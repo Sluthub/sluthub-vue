@@ -2,18 +2,14 @@
   <VAvatar
     :size="size">
     <JImg
-      :src="url"
-      :alt="$t('userImage')"
-      :transition-props="{
-        mode: 'out-in'
-      }">
+      :src="getUserImageUrl(remote.auth.currentUser.value)"
+      :alt="$t('userImage')">
       <template #placeholder>
         <VAvatar
           color="primary"
           :size="size">
-          <VIcon :size="iconSize">
-            <IMdiAccount />
-          </VIcon>
+          <JIcon
+            class="i-mdi:account" />
         </VAvatar>
       </template>
     </JImg>
@@ -22,8 +18,8 @@
 
 <script setup lang="ts">
 import type { UserDto } from '@jellyfin/sdk/lib/generated-client';
-import { computed } from 'vue';
-import { remote } from '@/plugins/remote';
+import { remote } from '#/plugins/remote';
+import { getUserImageUrl } from '#/utils/images';
 
 /**
  * TODO: In reality, rounded is unnecessary since it can be passed as fallthrough,
@@ -36,13 +32,4 @@ const { user, size = 64, rounded } = defineProps<{
   size?: number;
   rounded?: boolean;
 }>();
-
-const url = computed(() => {
-  return user.Id && user.PrimaryImageTag && remote.sdk.api?.basePath
-    ? `${remote.sdk.api.basePath}/Users/${user.Id}/Images/Primary/?tag=${user.PrimaryImageTag}`
-    : undefined;
-});
-const iconSize = computed(() => {
-  return size * 0.75;
-});
 </script>

@@ -22,24 +22,20 @@
         </div>
         <div
           v-if="item.Width && item.Height"
-          class="text-center text-body-2 text--secondary">
+          class="text-center text--secondary text-body-2">
           {{ t('dimensions', { width: item.Width, height: item.Height }) }}
         </div>
         <VCardActions class="justify-center">
           <VBtn
             icon
             @click="onSearch">
-            <VIcon>
-              <IMdiMagnify />
-            </VIcon>
+            <JIcon class="i-mdi:magnify" />
           </VBtn>
           <VBtn
             icon
             class="ml-3"
             @click="onDelete(item)">
-            <VIcon>
-              <IMdiDelete />
-            </VIcon>
+            <JIcon class="i-mdi:delete" />
           </VBtn>
         </VCardActions>
       </VCard>
@@ -75,17 +71,13 @@
             <VBtn
               icon
               @click="onSearch">
-              <VIcon>
-                <IMdiMagnify />
-              </VIcon>
+              <JIcon class="i-mdi:magnify" />
             </VBtn>
             <VBtn
               icon
               class="ml-3"
               @click="onDelete(item)">
-              <VIcon>
-                <IMdiDelete />
-              </VIcon>
+              <JIcon class="i-mdi:delete" />
             </VBtn>
           </VCardActions>
         </VCard>
@@ -110,8 +102,8 @@ import { useI18n } from 'vue-i18n';
 import { watchImmediate } from '@vueuse/core';
 import {
   getImageInfo
-} from '@/utils/images';
-import { remote } from '@/plugins/remote';
+} from '#/utils/images';
+import { remote } from '#/plugins/remote';
 
 const { metadata } = defineProps<{ metadata: BaseItemDto }>();
 

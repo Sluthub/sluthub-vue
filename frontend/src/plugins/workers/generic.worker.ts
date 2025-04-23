@@ -1,6 +1,8 @@
+/// <reference lib="WebWorker" />
+
 import { expose } from 'comlink';
-import { parseSsaFile, parseVttFile } from './generic/subtitles';
-import { sealed } from '@/utils/validation';
+import { sealed } from '@jellyfin-vue/shared/validation';
+import { parseVttFile } from './generic/subtitles';
 
 /**
  * All functions that could take some time to complete and block the main thread
@@ -14,6 +16,7 @@ class GenericWorker {
    */
   public shuffle<T>(array: T[]) {
     for (let i = array.length - 1; i > 0; i--) {
+      // eslint-disable-next-line sonarjs/pseudo-random
       const j = Math.floor(Math.random() * (i + 1));
 
       [array[i], array[j]] = [array[j], array[i]];
@@ -26,7 +29,6 @@ class GenericWorker {
    * Functions for parsing subtitles
    */
   public parseVttFile = parseVttFile;
-  public parseSsaFile = parseSsaFile;
 }
 
 const instance = new GenericWorker();

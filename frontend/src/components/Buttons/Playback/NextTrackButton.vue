@@ -2,14 +2,14 @@
   <VBtn
     v-bind="$attrs"
     icon
-    :disabled="!playbackManager.nextItem"
+    :disabled="!playbackManager.nextItem.value"
     @click="playbackManager.setNextItem">
-    <VIcon v-bind="$attrs">
-      <IMdiSkipNext />
-    </VIcon>
+    <JIcon
+      v-bind="$attrs"
+      class="i-mdi:skip-next" />
   </VBtn>
 </template>
 
 <script setup lang="ts">
-import { playbackManager } from '@/store/playback-manager';
+import { playbackManager } from '#/store/playback-manager';
 </script>

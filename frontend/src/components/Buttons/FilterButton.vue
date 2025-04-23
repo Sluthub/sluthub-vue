@@ -3,10 +3,8 @@
     class="ma-2"
     :icon="$vuetify.display.smAndDown">
     {{ !$vuetify.display.smAndDown ? t('filter') : undefined }}
-    <VIcon :end="!$vuetify.display.smAndDown">
-      <IMdiMenuDown v-if="!$vuetify.display.smAndDown" />
-      <IMdiFilterVariant v-else />
-    </VIcon>
+    <JIcon
+      :class="$vuetify.display.smAndDown ? 'mdi-filter-variant' : 'i-mdi:menu-down'" />
     <VMenu
       :disabled="disabled"
       :close-on-content-click="false"
@@ -172,8 +170,8 @@ import { type BaseItemDto, ItemFilter } from '@jellyfin/sdk/lib/generated-client
 import { getFilterApi } from '@jellyfin/sdk/lib/utils/api/filter-api';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { remote } from '@/plugins/remote';
-import { useSnackbar } from '@/composables/use-snackbar';
+import { remote } from '#/plugins/remote';
+import { useSnackbar } from '#/composables/use-snackbar';
 
 export type FeatureFilters =
   | 'HasSubtitles'
@@ -286,7 +284,7 @@ async function refreshItems(): Promise<void> {
   try {
     const response = (
       await remote.sdk.newUserApi(getFilterApi).getQueryFiltersLegacy({
-        userId: remote.auth.currentUserId,
+        userId: remote.auth.currentUserId.value,
         parentId: item.Id,
         includeItemTypes: [item.Type]
       })

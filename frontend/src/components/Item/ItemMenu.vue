@@ -6,9 +6,7 @@
     size="small"
     @click.stop.prevent="onActivatorClick"
     @contextmenu.stop.prevent="onRightClick">
-    <VIcon>
-      <IMdiDotsVertical />
-    </VIcon>
+    <JIcon class="i-mdi:dots-vertical" />
     <VMenu
       v-model="show"
       :persistent="false"
@@ -28,8 +26,13 @@
             class="text"
             :disabled="menuOption.disabled"
             :title="menuOption.title"
-            :prepend-icon="menuOption.icon"
-            @click="menuOption.action" />
+            @click="menuOption.action">
+            <template #prepend>
+              <JIcon
+                :class="menuOption.icon"
+                class="uno-w-10" />
+            </template>
+          </VListItem>
         </template>
       </VList>
     </VMenu>
@@ -56,24 +59,10 @@
 <script lang="ts">
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client';
 import { useClipboard, useEventListener } from '@vueuse/core';
-import IMdiArrowExpandDown from 'virtual:icons/mdi/arrow-expand-down';
-import IMdiArrowExpandUp from 'virtual:icons/mdi/arrow-expand-up';
-import IMdiCloudSearch from 'virtual:icons/mdi/cloud-search-outline';
-import IMdiContentCopy from 'virtual:icons/mdi/content-copy';
-import IMdiDelete from 'virtual:icons/mdi/delete';
-import IMdiDisc from 'virtual:icons/mdi/disc';
-import IMdiInformation from 'virtual:icons/mdi/information';
-import IMdiPencilOutline from 'virtual:icons/mdi/pencil-outline';
-import IMdiPlaySpeed from 'virtual:icons/mdi/play-speed';
-import IMdiPlaylistMinus from 'virtual:icons/mdi/playlist-minus';
-import IMdiPlaylistPlus from 'virtual:icons/mdi/playlist-plus';
-import IMdiRefresh from 'virtual:icons/mdi/refresh';
-import IMdiReplay from 'virtual:icons/mdi/replay';
-import IMdiShuffle from 'virtual:icons/mdi/shuffle';
 import { computed, getCurrentInstance, onMounted, shallowRef, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { isStr } from '@/utils/validation';
+import { isNil, isStr } from '@jellyfin-vue/shared/validation';
 import {
   canIdentify,
   canInstantMix,
@@ -83,17 +72,17 @@ import {
   getItemIdFromSourceIndex,
   getItemSeasonDownloadMap,
   getItemSeriesDownloadMap
-} from '@/utils/items';
-import { taskManager } from '@/store/task-manager';
-import { playbackManager } from '@/store/playback-manager';
-import { apiStore } from '@/store/api';
-import { remote } from '@/plugins/remote';
-import { useSnackbar } from '@/composables/use-snackbar';
-import { useConfirmDialog } from '@/composables/use-confirm-dialog';
+} from '#/utils/items';
+import { taskManager } from '#/store/task-manager';
+import { playbackManager } from '#/store/playback-manager';
+import { apiStore } from '#/store/api';
+import { remote } from '#/plugins/remote';
+import { useSnackbar } from '#/composables/use-snackbar';
+import { useConfirmDialog } from '#/composables/use-confirm-dialog';
 
 interface MenuOption {
   title: string;
-  icon: typeof IMdiPlaySpeed;
+  icon: string;
   action: () => void;
   disabled?: boolean;
 }
@@ -151,13 +140,13 @@ const mediaInfoDialog = shallowRef(false);
 
 const isActive = computed(() => show.value || metadataDialog.value || refreshDialog.value || identifyItemDialog.value || mediaInfoDialog.value);
 
-watch(isActive, (newVal) => {
-  newVal ? emit('active') : emit('inactive');
-});
+watch(isActive, newVal =>
+  emit(newVal ? 'active' : 'inactive')
+);
 
 const errorMessage = t('anErrorHappened');
 const isItemRefreshing = computed(
-  () => taskManager.getTask(item.Id ?? '') !== undefined
+  () => !isNil(taskManager.getTask(item.Id ?? ''))
 );
 const itemDeletionName = computed(() => {
   const parentName = item.Name ?? undefined;
@@ -184,7 +173,7 @@ const itemDeletionName = computed(() => {
  */
 const playNextAction = {
   title: t('playNext'),
-  icon: IMdiPlaySpeed,
+  icon: 'i-mdi:play-speed',
   action: async (): Promise<void> => {
     await playbackManager.playNext(item);
     useSnackbar(t('itemPlayNext'), 'success');
@@ -192,31 +181,31 @@ const playNextAction = {
 };
 const pushToTopOfQueueAction = {
   title: t('pushToTop'),
-  icon: IMdiArrowExpandUp,
+  icon: 'i-mdi:arrow-expand-up',
   action: (): void => {
     playbackManager.changeItemPosition(item.Id, 0);
   }
 };
 const removeFromQueueAction = {
   title: t('removeFromQueue'),
-  icon: IMdiPlaylistMinus,
+  icon: 'i-mdi:playlist-minus',
   action: (): void => {
-    playbackManager.removeFromQueue(item.Id || '');
+    playbackManager.removeFromQueue(item.Id ?? '');
   }
 };
 const pushToBottomOfQueueAction = {
   title: t('pushToBottom'),
-  icon: IMdiArrowExpandDown,
+  icon: 'i-mdi:arrow-expand-down',
   action: (): void => {
     playbackManager.changeItemPosition(
       item.Id,
-      playbackManager.queue.length - 1
+      playbackManager.queueLength.value - 1
     );
   }
 };
 const playFromBeginningAction = {
   title: t('playFromBeginning'),
-  icon: IMdiReplay,
+  icon: 'i-mdi:replay',
   action: async (): Promise<void> => {
     await playbackManager.play({
       item: item
@@ -225,7 +214,7 @@ const playFromBeginningAction = {
 };
 const shuffleAction = {
   title: t('shuffle'),
-  icon: IMdiShuffle,
+  icon: 'i-mdi:shuffle',
   action: async (): Promise<void> => {
     await playbackManager.play({
       item: item,
@@ -236,7 +225,7 @@ const shuffleAction = {
 };
 const addToQueueAction = {
   title: t('addToQueue'),
-  icon: IMdiPlaylistPlus,
+  icon: 'i-mdi:playlist-plus',
   action: async (): Promise<void> => {
     await playbackManager.addToQueue(item);
     useSnackbar(t('addedToQueue'), 'success');
@@ -244,7 +233,7 @@ const addToQueueAction = {
 };
 const instantMixAction = {
   title: t('instantMix'),
-  icon: IMdiDisc,
+  icon: 'i-mdi:disc',
   action: async (): Promise<void> => {
     if (item.Id) {
       try {
@@ -261,14 +250,14 @@ const instantMixAction = {
  */
 const mediaInfoAction = {
   title: t('mediaInfo'),
-  icon: IMdiInformation,
+  icon: 'i-mdi:information',
   action: (): void => {
     mediaInfoDialog.value = true;
   }
 };
 const refreshAction = {
   title: t('refreshMetadata'),
-  icon: IMdiRefresh,
+  icon: 'i-mdi:refresh',
   action: (): void => {
     refreshDialog.value = true;
   },
@@ -276,14 +265,14 @@ const refreshAction = {
 };
 const editMetadataAction = {
   title: t('editMetadata'),
-  icon: IMdiPencilOutline,
+  icon: 'i-mdi:pencil-outline',
   action: (): void => {
     metadataDialog.value = true;
   }
 };
 const deleteItemAction = {
   title: t('deleteItem'),
-  icon: IMdiDelete,
+  icon: 'i-mdi:delete',
   action: async (): Promise<void> => {
     await useConfirmDialog(
       async () => {
@@ -314,14 +303,14 @@ const deleteItemAction = {
 };
 const identifyItemAction = {
   title: t('identify'),
-  icon: IMdiCloudSearch,
+  icon: 'i-mdi:cloud-search',
   action: (): void => {
     identifyItemDialog.value = true;
   }
 };
 const copyDownloadURLAction = {
   title: t('copyStreamURL'),
-  icon: IMdiContentCopy,
+  icon: 'i-mdi:content-copy',
   action: async (): Promise<void> => {
     const clipboard = useClipboard();
     let streamUrls: Map<string, string> | string | undefined;
@@ -366,11 +355,14 @@ const copyDownloadURLAction = {
       if (text) {
         await (isStr(streamUrls)
           ? copyAction(text)
-          : useConfirmDialog(async () => { await copyAction(text); }, {
-            title: t('copyPrompt'),
-            text: text,
-            confirmText: t('accept')
-          }));
+          : useConfirmDialog(async () => await copyAction(text),
+              {
+                title: t('copyPrompt'),
+                text: text,
+                confirmText: t('accept')
+              }
+            )
+        );
       } else {
         useSnackbar(errorMessage, 'error');
       }
@@ -389,17 +381,17 @@ function getQueueOptions(): MenuOption[] {
 
   if (
     queue
-    && playbackManager.queueIds.includes(item.Id || '')
+    && playbackManager.queueHasItem(item.Id ?? '')
   ) {
     queueOptions.push(pushToTopOfQueueAction);
 
-    if (playbackManager.currentItem?.Id !== item.Id) {
+    if (playbackManager.currentItem.value?.Id !== item.Id) {
       queueOptions.push(removeFromQueueAction);
     }
 
     if (
-      playbackManager.nextItem?.Id !== item.Id
-      && playbackManager.currentItem?.Id !== item.Id
+      playbackManager.nextItem.value?.Id !== item.Id
+      && playbackManager.currentItem.value?.Id !== item.Id
     ) {
       queueOptions.push(playNextAction);
     }
@@ -422,10 +414,10 @@ function getPlaybackOptions(): MenuOption[] {
 
   playbackOptions.push(shuffleAction);
 
-  if (playbackManager.currentItem) {
+  if (playbackManager.currentItem.value) {
     if (
-      playbackManager.nextItem?.Id !== item.Id
-      && playbackManager.currentItem.Id !== item.Id
+      playbackManager.nextItem.value?.Id !== item.Id
+      && playbackManager.currentItem.value.Id !== item.Id
       && !queue
     ) {
       playbackOptions.push(playNextAction);
@@ -434,7 +426,7 @@ function getPlaybackOptions(): MenuOption[] {
     playbackOptions.push(addToQueueAction);
   }
 
-  if (canInstantMix(item) && playbackManager.currentItem) {
+  if (canInstantMix(item) && playbackManager.currentItem.value) {
     playbackOptions.push(instantMixAction);
   }
 
@@ -447,7 +439,7 @@ function getPlaybackOptions(): MenuOption[] {
 function getCopyOptions(): MenuOption[] {
   const copyActions: MenuOption[] = [];
 
-  if (remote.auth.currentUser?.Policy?.EnableContentDownloading) {
+  if (remote.auth.currentUser.value?.Policy?.EnableContentDownloading) {
     copyActions.push(copyDownloadURLAction);
   }
 
@@ -468,7 +460,7 @@ function getLibraryOptions(): MenuOption[] {
     libraryOptions.push(refreshAction);
   }
 
-  if (remote.auth.currentUser?.Policy?.IsAdministrator) {
+  if (remote.auth.currentUser.value?.Policy?.IsAdministrator) {
     libraryOptions.push(editMetadataAction);
 
     if (canIdentify(item)) {
@@ -477,8 +469,8 @@ function getLibraryOptions(): MenuOption[] {
   }
 
   if (
-    remote.auth.currentUser?.Policy?.EnableContentDeletion
-    || remote.auth.currentUser?.Policy?.EnableContentDeletionFromFolders
+    remote.auth.currentUser.value?.Policy?.EnableContentDeletion
+    || remote.auth.currentUser.value?.Policy?.EnableContentDeletionFromFolders
   ) {
     libraryOptions.push(deleteItemAction);
   }

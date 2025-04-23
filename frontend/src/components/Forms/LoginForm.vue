@@ -8,8 +8,8 @@
         v-if="!user"
         v-model="login.username"
         variant="outlined"
-        autofocus
         hide-details
+        autofocus
         :label="$t('username')"
         :rules="rules" />
       <VTextField
@@ -18,9 +18,13 @@
         hide-details
         class="mt-4"
         :label="$t('password')"
-        :append-inner-icon="showPassword ? IconEyeOff : IconEye"
-        :type="showPassword ? 'text' : 'password'"
-        @click:append-inner="() => (showPassword = !showPassword)" />
+        :type="showPassword ? 'text' : 'password'">
+        <template #append-inner>
+          <JIcon
+            :class="showPassword ? 'i-mdi:eye-off' : 'i-mdi:eye'"
+            @click.passive="() => (showPassword = !showPassword)" />
+        </template>
+      </VTextField>
       <VCheckbox
         v-model="login.rememberMe"
         hide-details
@@ -41,7 +45,7 @@
             {{ $t('changeServer') }}
           </VBtn>
           <VBtn
-            v-else-if="remote.auth.currentServer?.PublicUsers.length"
+            v-else-if="remote.auth.currentServer.value?.PublicUsers.length"
             block
             size="large"
             variant="elevated"
@@ -68,13 +72,11 @@
 
 <script setup lang="ts">
 import type { UserDto } from '@jellyfin/sdk/lib/generated-client';
-import IconEye from 'virtual:icons/mdi/eye';
-import IconEyeOff from 'virtual:icons/mdi/eye-off';
 import { ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { fetchIndexPage } from '@/utils/items';
-import { remote } from '@/plugins/remote';
-import { jsonConfig } from '@/utils/external-config';
+import { fetchIndexPage } from '#/utils/items';
+import { remote } from '#/plugins/remote';
+import { jsonConfig } from '#/utils/external-config';
 
 const { user, disabled } = defineProps<{ user?: UserDto; disabled?: boolean }>();
 

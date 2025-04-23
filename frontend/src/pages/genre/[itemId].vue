@@ -55,34 +55,35 @@ import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api';
 import { getUserLibraryApi } from '@jellyfin/sdk/lib/utils/api/user-library-api';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { isStr } from '@/utils/validation';
-import { useResponsiveClasses } from '@/composables/use-responsive-classes';
-import { useBaseItem } from '@/composables/apis';
-import { useItemPageTitle } from '@/composables/page-title';
+import { isStr } from '@jellyfin-vue/shared/validation';
+import { useResponsiveClasses } from '#/composables/use-responsive-classes';
+import { useBaseItem } from '#/composables/apis';
+import { useItemPageTitle } from '#/composables/page-title';
 
 const route = useRoute('/genre/[itemId]');
 
 const { itemId } = (route.params).itemId.replaceAll('-', '');
 
 const includeItemTypes = computed<BaseItemKind[]>(() => {
-  const typesQuery = route.query.type ?? [] as BaseItemKind;
+  const typesQuery = (route.query.type ?? []) as BaseItemKind[];
 
   return isStr(typesQuery)
-    ? [typesQuery]
+    ? [typesQuery] as BaseItemKind[]
     : typesQuery;
 });
 
-const { data: genre } = await useBaseItem(getUserLibraryApi, 'getItem')(() => ({
-  itemId
-}));
-
-const { data: genres } = await useBaseItem(getItemsApi, 'getItems')(() => ({
-  genreIds: [itemId],
-  includeItemTypes: includeItemTypes.value,
-  recursive: true,
-  sortBy: ['SortName'],
-  sortOrder: [SortOrder.Ascending]
-}));
+const [{ data: genre }, { data: genres }] = await Promise.all([
+  useBaseItem(getUserLibraryApi, 'getItem')(() => ({
+    itemId
+  })),
+  useBaseItem(getItemsApi, 'getItems')(() => ({
+    genreIds: [itemId],
+    includeItemTypes: includeItemTypes.value,
+    recursive: true,
+    sortBy: ['SortName'],
+    sortOrder: [SortOrder.Ascending]
+  }))
+]);
 
 useItemPageTitle(genre);
 </script>

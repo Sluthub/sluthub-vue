@@ -20,7 +20,7 @@ jobs:
           show-progress: false
 
       - name: Scan
-        uses: actions/dependency-review-action@v4.5.0
+        uses: actions/dependency-review-action@v4.6.0
         with:
           base-ref: ${{ github.event.pull_request.base.sha || 'master' }}
           head-ref: ${{ github.event.pull_request.head.sha || github.ref }}
@@ -33,10 +33,9 @@ jobs:
       matrix:
         command:
           - lint
+          - test
           - check:types
-        include:
-          - workspace: frontend
-            command: analyze:cycles
+          - analyze:cycles
 
     steps:
       - name: Checkout ⬇️
@@ -46,7 +45,7 @@ jobs:
           show-progress: false
 
       - name: Setup node environment ⚙️
-        uses: actions/setup-node@v4.1.0
+        uses: actions/setup-node@v4.3.0
         with:
           node-version: lts/*
           check-latest: true
@@ -56,7 +55,7 @@ jobs:
         run: npm ci --no-audit
 
       - name: Run ${{ matrix.command }} ⚙️
-        run: npm run ${{ matrix.command }} ${{ matrix.workspace && format('-w {0}', matrix.workspace) || '' }}
+        run: npm run ${{ matrix.command }}
 
   commits_checks:
     name: Commit linting 💬✅

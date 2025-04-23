@@ -59,7 +59,7 @@
         v-else-if="
           currentUser ||
             loginAsOther ||
-            (publicUsers.length === 0 && $remote.auth.currentServer?.ServerName)
+            (publicUsers.length === 0 && $remote.auth.currentServer.value?.ServerName)
         "
         sm="6"
         md="6"
@@ -75,7 +75,7 @@
           {{ $t('login') }}
         </h1>
         <h5 class="text-center mb-3 text--disabled">
-          {{ $remote.auth.currentServer?.ServerName }}
+          {{ $remote.auth.currentServer.value?.ServerName }}
         </h5>
         <LoginForm
           :user="currentUser"
@@ -101,18 +101,18 @@ meta:
 import type { UserDto } from '@jellyfin/sdk/lib/generated-client';
 import { ref, shallowRef, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { remote } from '@/plugins/remote';
-import { jsonConfig } from '@/utils/external-config';
-import { usePageTitle } from '@/composables/page-title';
-import { useSnackbar } from '@/composables/use-snackbar';
-import { isConnectedToServer } from '@/store';
+import { remote } from '#/plugins/remote';
+import { jsonConfig } from '#/utils/external-config';
+import { usePageTitle } from '#/composables/page-title';
+import { useSnackbar } from '#/composables/use-snackbar';
+import { isConnectedToServer } from '#/store';
 
 const { t } = useI18n();
 
 usePageTitle(() => t('login'));
 
-const disclaimer = computed(() => remote.auth.currentServer?.BrandingOptions.LoginDisclaimer);
-const publicUsers = computed(() => remote.auth.currentServer?.PublicUsers ?? []);
+const disclaimer = computed(() => remote.auth.currentServer.value?.BrandingOptions.LoginDisclaimer);
+const publicUsers = computed(() => remote.auth.currentServer.value?.PublicUsers ?? []);
 
 const loginAsOther = shallowRef(false);
 const currentUser = ref<UserDto>();

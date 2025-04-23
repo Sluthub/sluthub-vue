@@ -3,7 +3,7 @@
     v-model="currentSource"
     :items="selectSources"
     :label="label"
-    :single-line="label === undefined"
+    :single-line="isNil(label)"
     hide-details
     class="text-truncate">
     <template #selection="{ item: i }">
@@ -20,7 +20,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { MediaSourceInfo } from '@jellyfin/sdk/lib/generated-client';
-import { getItemizedSelect } from '@/utils/forms';
+import { isNil } from '@jellyfin-vue/shared/validation';
+import { getItemizedSelect } from '#/utils/forms';
 
 const { sources, defaultSourceIndex, label } = defineProps<{
   sources: MediaSourceInfo[];

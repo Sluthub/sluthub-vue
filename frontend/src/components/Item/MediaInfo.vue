@@ -11,11 +11,8 @@
     <span v-if="item.ProductionYear && year">{{ item.ProductionYear }}</span>
     <span v-if="item.OfficialRating && rating">{{ item.OfficialRating }}</span>
     <span v-if="item.CommunityRating && rating">
-      <VIcon
-        class="rating-icon"
-        size="16">
-        <IMdiStar />
-      </VIcon>
+      <JIcon
+        class="rating-icon i-mdi:star uno-opacity-60" />
       {{ item.CommunityRating.toFixed(1) }}
     </span>
     <span v-if="item.Type === 'MusicAlbum' && item.ChildCount && tracks">
@@ -32,7 +29,7 @@
 
 <script setup lang="ts">
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client';
-import { getEndsAtTime, getRuntimeTime } from '@/utils/time';
+import { getEndsAtTime, getRuntimeTime } from '#/utils/time';
 
 const { item, year, rating, runtime, tracks, endsAt } = defineProps<{
   item: BaseItemDto;
@@ -56,9 +53,5 @@ span:first-of-type {
 
 span:last-of-type {
   margin-right: 0;
-}
-
-.rating-icon {
-  opacity: 0.6;
 }
 </style>

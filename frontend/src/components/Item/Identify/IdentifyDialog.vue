@@ -16,12 +16,12 @@
         icon
         :disabled="tabName === 'searchMenu'"
         @click="clear">
-        <IMdiArrowLeft />
+        <JIcon class="i-mdi:arrow-left" />
       </VBtn>
     </template>
 
     <VCardText
-      class="pa-0 px-2 flex-grow-1"
+      class="pa-0 flex-grow-1 px-2"
       :class="{
         'd-flex': !$vuetify.display.mobile,
         'flex-row': !$vuetify.display.mobile
@@ -47,7 +47,7 @@
         </VWindowItem>
         <VWindowItem value="resultsMenu">
           <h3>{{ $t('results') }}</h3>
-          <div class="mt-2 text-subtitle-1">
+          <div class="text-subtitle-1 mt-2">
             {{ $t('identifyInstructResult') }}
           </div>
           <VCheckbox
@@ -96,10 +96,10 @@ import type {
 import { getItemLookupApi } from '@jellyfin/sdk/lib/utils/api/item-lookup-api';
 import { computed, ref, shallowRef, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useConfirmDialog } from '@/composables/use-confirm-dialog';
-import { useSnackbar } from '@/composables/use-snackbar';
-import { remote } from '@/plugins/remote';
-import { isArray, isStr } from '@/utils/validation';
+import { isArray, isNil, isStr } from '@jellyfin-vue/shared/validation';
+import { useConfirmDialog } from '#/composables/use-confirm-dialog';
+import { useSnackbar } from '#/composables/use-snackbar';
+import { remote } from '#/plugins/remote';
 
 interface IdentifyField {
   key: string;
@@ -145,7 +145,7 @@ const searchFields = computed<IdentifyField[]>(() => {
     }
   ];
 
-  if (!['BoxSet', 'Person'].includes(item.Type || '')) {
+  if (!['BoxSet', 'Person'].includes(item.Type ?? '')) {
     result.push({
       key: 'search-year',
       title: t('year'),
@@ -175,7 +175,7 @@ const searchFields = computed<IdentifyField[]>(() => {
   const missingProviders = availableProviders
     .filter(p => !populatedKeys.includes(p.Key ?? ''))
     .map(p => p.Key)
-    .filter((p): p is string => p !== undefined);
+    .filter((p): p is string => !isNil(p));
 
   for (const key of missingProviders) {
     result.push({
@@ -195,7 +195,7 @@ const fieldsInputs = ref<IdentifyField[]>(
   structuredClone(toRaw(searchFields.value))
 );
 const tabName = computed(() =>
-  searchResults.value === undefined ? 'searchMenu' : 'resultsMenu'
+  isNil(searchResults.value) ? 'searchMenu' : 'resultsMenu'
 );
 const progress = computed(() => {
   switch (tabName.value) {
@@ -232,7 +232,7 @@ async function getItemRemoteSearch(
   const searcher = remote.sdk.newUserApi(getItemLookupApi);
   const itemId = item.Id;
 
-  if (itemId === undefined) {
+  if (isNil(itemId)) {
     return;
   }
 

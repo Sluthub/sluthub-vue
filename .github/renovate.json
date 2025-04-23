@@ -27,11 +27,25 @@
       "groupName": "ci"
     },
     {
+      "matchPackageNames": [
+        "vue-i18n",
+        "@intlify/unplugin-vue-i18n"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
       "matchFileNames": [
-        "packaging/tauri/**"
+        "packaging/tauri/**",
+        "packages/tauri-runtime/**"
       ],
       "separateMajorMinor": false,
-      "groupName": "tauri"
+      "groupName": "tauri",
+      "matchPackageNames": [
+        "!vite"
+      ]
     },
     {
       "matchUpdateTypes": [

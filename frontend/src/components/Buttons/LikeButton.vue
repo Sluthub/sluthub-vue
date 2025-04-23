@@ -1,19 +1,19 @@
 <template>
   <VBtn
-    :icon="isFavorite ? IMdiHeart : IMdiHeartOutline"
+    icon
     :size="size"
     :color="isFavorite ? 'primary' : undefined"
     :loading="loading"
-    @click.stop.prevent="isFavorite = !isFavorite" />
+    @click.stop.prevent="isFavorite = !isFavorite">
+    <JIcon :class="isFavorite ? 'i-mdi:heart' : 'i-mdi:heart-outline'" />
+  </VBtn>
 </template>
 
 <script setup lang="ts">
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client';
 import { getUserLibraryApi } from '@jellyfin/sdk/lib/utils/api/user-library-api';
-import IMdiHeart from 'virtual:icons/mdi/heart';
-import IMdiHeartOutline from 'virtual:icons/mdi/heart-outline';
 import { computed, ref } from 'vue';
-import { useApi } from '@/composables/apis';
+import { useApi } from '#/composables/apis';
 
 const { size = 'small', item } = defineProps<{ item: BaseItemDto; size?: string }>();
 /**

@@ -16,8 +16,13 @@
         :to="item.to"
         :href="item.href"
         exact
-        :prepend-icon="item.icon"
-        :title="item.title" />
+        :title="item.title">
+        <template #prepend>
+          <JIcon
+            class="uno-min-w-10"
+            :class="item.icon" />
+        </template>
+      </VListItem>
       <VListSubheader>{{ $t('libraries') }}</VListSubheader>
       <template v-for="library in drawerItems">
         <VListItem
@@ -25,8 +30,13 @@
           :key="library.to"
           :to="library.to"
           exact
-          :prepend-icon="library.icon"
-          :title="library.title" />
+          :title="library.title">
+          <template #prepend>
+            <JIcon
+              class="uno-min-w-10"
+              :class="library.icon" />
+          </template>
+        </VListItem>
       </template>
     </VList>
     <template #append>
@@ -38,7 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import IMdiHome from 'virtual:icons/mdi/home';
 import { computed, inject, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { RouteNamedMap } from 'vue-router/auto-routes';
@@ -67,7 +76,7 @@ const transparentLayout = computed(previous => isRouting?.value ? previous : tra
 
 const items = [
   {
-    icon: IMdiHome,
+    icon: 'i-mdi:home',
     title: t('home'),
     to: '/'
   },

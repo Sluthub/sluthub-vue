@@ -1,6 +1,4 @@
 import { defu } from 'defu';
-import { toRaw } from 'vue';
-import { genericWorker } from '@/plugins/workers';
 
 /**
  * Merge 2 objects, excluding the keys from the destination that are not present in source
@@ -8,6 +6,7 @@ import { genericWorker } from '@/plugins/workers';
  * @param object - Target object. This one contains keys that might not be present in defaults
  * @param defaultObject - Sample/default representation of the object that should be used to detect which keys
  * should/shouldn't exist in the target.
+ * TODO: Handle deep objects
  */
 export function mergeExcludingUnknown<T extends object>(
   object: T,
@@ -31,7 +30,7 @@ export function mergeExcludingUnknown<T extends object>(
  * Uppercase the first letter of a string
  */
 export function upperFirst<T extends string>(str: T): Capitalize<T> {
-  return (str[0].toUpperCase() + str.slice(1)) as Capitalize<T>;
+  return (str[0]!.toUpperCase() + str.slice(1)) as Capitalize<T>;
 }
 
 /**
@@ -59,8 +58,8 @@ export function getFontFaces() {
 /**
  * Picks certain keys from an object and returns a new object with only those keys.
  */
-export function pick<T extends object>(object: T, keys: (keyof T)[]): Partial<T> {
-  const res = {} as Partial<T>;
+export function pick<T extends object, K extends keyof T>(object: T, keys: K[] | Set<K>): Pick<T, K> {
+  const res = {} as Pick<T, K>;
 
   for (const key of keys) {
     if (key in object) {
@@ -69,14 +68,4 @@ export function pick<T extends object>(object: T, keys: (keyof T)[]): Partial<T>
   }
 
   return res;
-}
-
-/**
- * Shuffles an array in a WebWorker using the Durstenfeld shuffle algorithm, an
- * optimized version of Fisher-Yates shuffle.
- *
- * It's also prepared for the case when the array is reactive thorugh Vue's `ref` or `reactive`.
- */
-export async function shuffle<T>(array: T[]): Promise<T[]> {
-  return await genericWorker.shuffle(toRaw(array)) as T[];
 }

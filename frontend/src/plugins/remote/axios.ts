@@ -4,10 +4,10 @@
 import axios, {
   type AxiosError
 } from 'axios';
+import { sealed } from '@jellyfin-vue/shared/validation';
 import auth from './auth';
-import { useSnackbar } from '@/composables/use-snackbar';
-import { i18n } from '@/plugins/i18n';
-import { sealed } from '@/utils/validation';
+import { useSnackbar } from '#/composables/use-snackbar';
+import { i18n } from '#/plugins/i18n';
 
 @sealed
 class RemotePluginAxios {
@@ -25,7 +25,7 @@ class RemotePluginAxios {
   public logoutInterceptor = async (error: AxiosError): Promise<void> => {
     if (
       error.response?.status === 401
-      && auth.currentUser
+      && auth.currentUser.value
       && !error.config?.url?.includes('/Sessions/Logout')
       && !error.config?.url?.includes('/Users/Me')
     ) {

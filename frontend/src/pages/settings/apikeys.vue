@@ -76,7 +76,7 @@
         " />
       <VDialog
         width="auto"
-        :model-value="confirmRevoke !== undefined"
+        :model-value="!isNil(confirmRevoke)"
         @update:model-value="confirmRevoke = undefined">
         <VCard>
           <VCardText>
@@ -112,9 +112,10 @@ import { getApiKeyApi } from '@jellyfin/sdk/lib/utils/api/api-key-api';
 import { formatRelative, parseJSON } from 'date-fns';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { remote } from '@/plugins/remote';
-import { useSnackbar } from '@/composables/use-snackbar';
-import { useDateFns } from '@/composables/use-datefns';
+import { isNil } from '@jellyfin-vue/shared/validation';
+import { remote } from '#/plugins/remote';
+import { useSnackbar } from '#/composables/use-snackbar';
+import { useDateFns } from '#/composables/use-datefns';
 
 const { t } = useI18n();
 

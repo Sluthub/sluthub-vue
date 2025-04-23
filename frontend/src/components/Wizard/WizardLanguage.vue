@@ -29,9 +29,9 @@ import { getLocalizationApi } from '@jellyfin/sdk/lib/utils/api/localization-api
 import { getStartupApi } from '@jellyfin/sdk/lib/utils/api/startup-api';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { SomeItemSelectedRule } from '@/utils/validation';
-import { remote } from '@/plugins/remote';
-import { useSnackbar } from '@/composables/use-snackbar';
+import { SomeItemSelectedRule } from '@jellyfin-vue/shared/validation';
+import { remote } from '#/plugins/remote';
+import { useSnackbar } from '#/composables/use-snackbar';
 
 const emit = defineEmits<{
   'step-complete': [];
@@ -51,7 +51,7 @@ onMounted(async () => {
   loading.value = true;
 
   const api = remote.sdk.oneTimeSetup(
-    remote.auth.currentServer?.PublicAddress ?? ''
+    remote.auth.currentServer.value?.PublicAddress ?? ''
   );
 
   try {
@@ -78,7 +78,7 @@ async function setLanguage(): Promise<void> {
   loading.value = true;
 
   const api = remote.sdk.oneTimeSetup(
-    remote.auth.currentServer?.PublicAddress ?? ''
+    remote.auth.currentServer.value?.PublicAddress ?? ''
   );
 
   try {

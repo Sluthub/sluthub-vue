@@ -1,26 +1,23 @@
 <template>
   <JTransition>
-    <div
+    <BlurhashCanvas
       v-if="blurhash"
       :key="blurhash"
-      class="uno-fixed uno-left-0 uno-top-0 uno-h-screen uno-w-screen uno-bg-cover uno-color-background"
+      :hash="blurhash"
+      :width="32"
+      :height="32"
       :style="{
         opacity,
-      }">
-      <BlurhashCanvas
-        :hash="blurhash"
-        :width="32"
-        :height="32"
-        class="uno-fixed uno-left-0 uno-top-0 uno-h-screen uno-w-screen uno-bg-cover" />
-    </div>
+      }"
+      class="uno-fixed uno-h-screen uno-w-screen uno-transition-opacity" />
   </JTransition>
 </template>
 
 <script lang="ts">
-import { toRef, type MaybeRefOrGetter, shallowRef, onMounted, onBeforeUnmount, computed } from 'vue';
+import { toRef, type MaybeRefOrGetter, shallowRef, onMounted, computed, onScopeDispose } from 'vue';
 import { watchImmediate } from '@vueuse/core';
-import { isNil } from '@/utils/validation';
-import { prefersNoTransparency } from '@/store';
+import { isNil } from '@jellyfin-vue/shared/validation';
+import { prefersNoTransparency } from '#/store';
 
 const DEFAULT_OPACITY = 0.25;
 const requested_opacity = shallowRef(DEFAULT_OPACITY);
@@ -46,8 +43,10 @@ export function useBackdrop(hash?: MaybeRefOrGetter<string | undefined>, opacity
     }
   });
 
-  onBeforeUnmount(() => _blurhash.value = undefined);
-  onBeforeUnmount(() => requested_opacity.value = DEFAULT_OPACITY);
+  onScopeDispose(() => {
+    _blurhash.value = undefined;
+    requested_opacity.value = DEFAULT_OPACITY;
+  });
 }
 </script>
 

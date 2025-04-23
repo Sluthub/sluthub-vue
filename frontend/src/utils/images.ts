@@ -6,12 +6,15 @@ import {
   type BaseItemDto,
   BaseItemKind,
   type BaseItemPerson,
-  ImageType
+  ImageType,
+  type UserDto
 } from '@jellyfin/sdk/lib/generated-client';
 import { getImageApi } from '@jellyfin/sdk/lib/utils/api/image-api';
 import type { ImageUrlsApi } from '@jellyfin/sdk/lib/utils/api/image-urls-api';
-import { remote } from '@/plugins/remote';
-import { CardShapes, getShapeFromItemType, isPerson } from '@/utils/items';
+import type { ImageRequestParameters } from '@jellyfin/sdk/lib/models/api/image-request-parameters';
+import { isNil } from '@jellyfin-vue/shared/validation';
+import { remote } from '#/plugins/remote';
+import { CardShapes, getShapeFromItemType, isPerson } from '#/utils/items';
 
 export interface ImageUrlInfo {
   url?: string;
@@ -22,12 +25,62 @@ const excludedBlurhashTypes = Object.freeze(
   new Set<ImageType>([ImageType.Logo])
 );
 
+const imageDefaultOptions = (): ImageRequestParameters => ({ format: 'Webp' });
+
 /**
  * Gets the image URL given an item id and the image type requested
  */
 export function getItemImageUrl(...args: Parameters<ImageUrlsApi['getItemImageUrlById']>) {
+  const argsLen = args.length;
+
+  switch (argsLen) {
+    case 1: {
+      args.push(undefined, imageDefaultOptions());
+      break;
+    }
+    case 2: {
+      args.push(imageDefaultOptions());
+      break;
+    }
+    case 3: {
+      args[2] = { ...args[2], ...imageDefaultOptions() };
+      break;
+    }
+  }
+
   return remote.sdk.newUserApi(getImageApi).getItemImageUrlById(...args);
 }
+
+/**
+ * Gets the logged's user image URL
+ */
+export function getUserImageUrl(user?: UserDto) {
+  return remote.sdk.newUserApi(getImageApi).getUserImageUrl(user, imageDefaultOptions());
+}
+
+/**
+ * Gets the image url with the desired size and quality.
+ */
+function getImageUrlWithSize(
+  itemId: string,
+  { width,
+    height,
+    quality,
+    ratio = 1
+  }: {
+    width?: number;
+    height?: number;
+    quality?: number;
+    ratio?: number;
+  } = {},
+  imgType?: ImageType
+) {
+  return getItemImageUrl(itemId, imgType, {
+    quality,
+    maxWidth: isNil(width) ? undefined : Math.round(width * ratio),
+    maxHeight: isNil(height) ? undefined : Math.round(height * ratio)
+  });
+};
 
 /**
  * Gets the tag of the image of an specific item and type.
@@ -214,7 +267,6 @@ export function getImageInfo(
   } = {}
 ): ImageUrlInfo {
   // TODO: Refactor to have separate getPosterImageInfo, getThumbImageInfo and getBackdropImageInfo.
-  let url;
   let imgType;
   let imgTag;
   let itemId: string | null | undefined = item.Id;
@@ -356,31 +408,13 @@ export function getImageInfo(
     };
   }
 
-  const url_string = getItemImageUrl(itemId, imgType);
-
-  if (imgTag && imgType && url_string) {
-    url = new URL(url_string);
-
-    const parameters: Record<string, string> = {
-      imgTag,
-      quality: quality.toString()
-    };
-
-    if (width) {
-      width = Math.round(width * ratio);
-      parameters.maxWidth = width.toString();
-    }
-
-    if (height) {
-      height = Math.round(height * ratio);
-      parameters.maxHeight = height.toString();
-    }
-
-    url.search = new URLSearchParams(parameters).toString();
-  }
-
   return {
-    url: url?.href,
+    url: getImageUrlWithSize(itemId, {
+      width,
+      height,
+      quality,
+      ratio
+    }, imgType),
     blurhash:
       imgType && imgTag ? item.ImageBlurHashes?.[imgType]?.[imgTag] : undefined
   };
@@ -411,42 +445,28 @@ export function getLogo(
     tag?: string;
   } = {}
 ): ImageUrlInfo {
-  let url;
-  let imgType;
+  const imgType = ImageType.Logo;
   let imgTag;
   let itemId: string | null | undefined = item.Id;
 
   if (tag) {
-    imgType = ImageType.Logo;
     imgTag = tag;
   } else if (item.ImageTags?.Logo) {
-    imgType = ImageType.Logo;
     imgTag = item.ImageTags.Logo;
   } else if (item.ParentLogoImageTag && item.ParentLogoItemId) {
-    imgType = ImageType.Logo;
     imgTag = item.ParentLogoImageTag;
     itemId = item.ParentLogoItemId;
   }
 
-  if (imgTag && imgType && itemId) {
-    url = new URL(getItemImageUrl(itemId, imgType));
-
-    const parameters: Record<string, string> = {
-      imgTag,
-      quality: quality.toString()
-    };
-
-    if (width) {
-      width = Math.round(width * ratio);
-      parameters.maxWidth = width.toString();
-    }
-
-    url.search = new URLSearchParams(parameters).toString();
-  }
-
   return {
-    url: url?.href,
+    url: isNil(imgTag)
+      ? undefined
+      : getImageUrlWithSize(itemId ?? '', {
+          width,
+          quality,
+          ratio
+        }, imgType),
     blurhash:
-      imgType && imgTag ? item.ImageBlurHashes?.[imgType]?.[imgTag] : undefined
+      imgTag ? item.ImageBlurHashes?.[imgType]?.[imgTag] : undefined
   };
 }

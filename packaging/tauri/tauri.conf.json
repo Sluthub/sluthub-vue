@@ -1,45 +1,51 @@
 {
-  "bundle": {
-    "active": true,
-    "targets": [
-      "appimage",
-      "msi",
-      "dmg"
-    ],
-    "icon": [
-      "icons/**/*"
-    ],
-    "resources": [],
-    "externalBin": [],
-    "category": "Entertainment",
-    "linux": {
-      "appimage": {
-        "bundleMediaFramework": true
-      }
-    }
-  },
-  "build": {
-    "beforeBuildCommand": "npm run build -w @jellyfin-vue/frontend",
-    "frontendDist": "../../frontend/dist",
-    "beforeDevCommand": "npm start -w @jellyfin-vue/frontend",
-    "devUrl": "http://127.0.0.1:3000"
-  },
-  "productName": "jellyfin-vue",
-  "version": "../../frontend/package.json",
-  "identifier": "org.jellyfin.vue.tauri",
-  "plugins": {},
-  "app": {
-    "security": {
-      "csp": null
+    "bundle": {
+        "active": true,
+        "targets": [
+            "appimage",
+            "msi",
+            "dmg"
+        ],
+        "icon": [
+            "icons/**/*"
+        ],
+        "resources": [],
+        "externalBin": [],
+        "category": "Entertainment",
+        "linux": {
+            "appimage": {
+                "bundleMediaFramework": true
+            }
+        }
     },
-    "windows": [
-      {
-        "title": "Sluthub",
-        "width": 800,
-        "height": 600,
-        "resizable": true,
-        "fullscreen": false
-      }
-    ]
-  }
+    "build": {
+        "beforeBuildCommand": "npm run build -w @jellyfin-vue/tauri-runtime",
+        "frontendDist": "../../packages/tauri-runtime/dist",
+        "beforeDevCommand": "npm start -w @jellyfin-vue/tauri-runtime",
+        "devUrl": "http://127.0.0.1:3000"
+    },
+    "productName": "jellyfin-vue",
+    "version": "../../frontend/package.json",
+    "identifier": "org.jellyfin.vue.tauri",
+    "plugins": {},
+    "app": {
+        "security": {
+            "csp": null,
+            "capabilities": [{
+                "identifier": "all instances",
+                "description": "application capabilities for all instances",
+                "windows": ["*"],
+                "permissions": [
+                    "core:window:allow-set-fullscreen"
+                ]
+            }]
+        },
+        "windows": [{
+            "title": "Sluthub",
+            "width": 800,
+            "height": 600,
+            "resizable": true,
+            "fullscreen": false
+        }]
+    }
 }

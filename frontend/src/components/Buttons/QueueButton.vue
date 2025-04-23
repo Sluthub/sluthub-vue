@@ -1,82 +1,78 @@
 <template>
-  <VBtn
-    icon
-    class="align-self-center">
-    <VIcon>
-      <IMdiPlaylistPlay />
-    </VIcon>
-    <VTooltip
-      :text="$t('queue')"
-      location="top" />
-    <VMenu
-      v-model="menuModel"
-      :close-on-content-click="closeOnClick"
-      :transition="'slide-y-transition'"
-      :width="listWidth"
-      location="top">
-      <VCard>
-        <VList>
-          <VListItem :title="sourceText">
-            <template #prepend>
-              <VAvatar>
-                <BlurhashImage
-                  v-if="playbackManager.initiator"
-                  :item="playbackManager.initiator" />
-                <VIcon
-                  v-else
-                  :icon="modeIcon" />
-              </VAvatar>
-            </template>
-            <template #subtitle>
-              {{ getTotalEndsAtTime(playbackManager.queue) }} -
-              {{
-                $t('queueItems', {
-                  items: playbackManager.queue.length
-                })
-              }}
-            </template>
-          </VListItem>
-        </VList>
-        <VDivider />
-        <VList class="queue-area">
-          <DraggableQueue />
-        </VList>
-        <VSpacer />
-        <VCardActions>
-          <VBtn
-            icon
-            @click="playbackManager.stop">
-            <VIcon>
-              <IMdiPlaylistRemove />
-            </VIcon>
-            <VTooltip
-              :text="$t('clearQueue')"
-              location="top" />
-          </VBtn>
-          <VBtn
-            icon
-            disabled>
-            <VIcon>
-              <IMdiContentSave />
-            </VIcon>
-            <VTooltip
-              :text="$t('saveAsPlaylist')"
-              location="top" />
-          </VBtn>
+  <JTooltip
+    position="top"
+    :text="$t('queue')">
+    <VBtn
+      icon
+      class="align-self-center">
+      <JIcon class="i-mdi:playlist-play" />
+      <VMenu
+        v-model="menuModel"
+        :close-on-content-click="closeOnClick"
+        :transition="'slide-y-transition'"
+        :width="listWidth"
+        location="top">
+        <VCard>
+          <VList>
+            <VListItem :title="sourceText">
+              <template #prepend>
+                <VAvatar>
+                  <BlurhashImage
+                    v-if="playbackManager.initiator.value"
+                    :item="playbackManager.initiator.value" />
+                  <JIcon
+                    v-else
+                    :class="modeIcon" />
+                </VAvatar>
+              </template>
+              <template #subtitle>
+                {{ getTotalEndsAtTime(playbackManager.queue.value) }} -
+                {{
+                  $t('queueItems', {
+                    items: playbackManager.queueLength.value
+                  })
+                }}
+              </template>
+            </VListItem>
+          </VList>
+          <VDivider />
+          <VList class="queue-area">
+            <DraggableQueue />
+          </VList>
           <VSpacer />
-        </VCardActions>
-      </VCard>
-    </VMenu>
-  </VBtn>
+          <VCardActions>
+            <JTooltip
+              position="top"
+              :text="$t('clearQueue')">
+              <VBtn
+                icon
+                @click="playbackManager.stop">
+                <JIcon class="i-mdi:playlist-remove" />
+              </VBtn>
+            </JTooltip>
+            <JTooltip
+              position="top"
+              :text="$t('saveAsPlaylist')">
+              <VBtn
+                icon
+                disabled>
+                <JIcon class="i-mdi:content-save" />
+              </VBtn>
+            </JTooltip>
+            <VSpacer />
+          </VCardActions>
+        </VCard>
+      </VMenu>
+    </VBtn>
+  </JTooltip>
 </template>
 
 <script setup lang="ts">
-import IMdiPlaylistMusic from 'virtual:icons/mdi/playlist-music';
-import IMdiShuffle from 'virtual:icons/mdi/shuffle';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getTotalEndsAtTime } from '@/utils/time';
-import { InitMode, playbackManager } from '@/store/playback-manager';
+import JTooltip from '../../../../packages/ui-toolkit/src/components/JTooltip.vue';
+import { getTotalEndsAtTime } from '#/utils/time';
+import { InitMode, playbackManager } from '#/store/playback-manager';
 
 const { size = 40, closeOnClick = false } = defineProps<{
   size?: number;
@@ -95,40 +91,36 @@ const sourceText = computed(() => {
    * https://github.com/jellyfin/jellyfin-vue/pull/609
    */
   const unknownSource = t('unknown');
+  const isFromAlbum = playbackManager.currentItem.value?.AlbumId
+    === playbackManager.initiator.value?.Id;
+  const substitution = {
+    item: playbackManager.initiator.value?.Name
+  };
 
-  switch (playbackManager.playbackInitMode) {
+  switch (playbackManager.playbackInitMode.value) {
     case InitMode.Unknown: {
       return unknownSource;
     }
     case InitMode.Item: {
-      return playbackManager.currentItem?.AlbumId
-        === playbackManager.initiator?.Id
-        ? t('playingFrom', {
-          item: playbackManager.initiator?.Name
-        })
+      return isFromAlbum
+        ? t('playingFrom', substitution)
         : unknownSource;
     }
     case InitMode.Shuffle: {
       return t('playinginShuffle');
     }
     case InitMode.ShuffleItem: {
-      return playbackManager.currentItem?.AlbumId
-        === playbackManager.initiator?.Id
-        ? t('playingItemInShuffle', {
-          item: playbackManager.initiator?.Name
-        })
+      return isFromAlbum
+        ? t('playingItemInShuffle', substitution)
         : unknownSource;
-    }
-    default: {
-      return '';
     }
   }
 });
 
 const modeIcon = computed(() =>
-  playbackManager.playbackInitMode === InitMode.Shuffle
-    ? IMdiShuffle
-    : IMdiPlaylistMusic
+  playbackManager.playbackInitMode.value === InitMode.Shuffle
+    ? 'i-mdi:shuffle'
+    : 'i-mdi:playlist-music'
 );
 </script>
 

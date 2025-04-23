@@ -3,13 +3,13 @@
     v-if="showButton"
     :color="buttonColor">
     <template #icon>
-      <VProgressCircular
+      <JProgressCircular
         v-if="!buttonColor"
-        indeterminate
-        size="24" />
-      <VIcon v-else>
-        <IMdiCheck />
-      </VIcon>
+        class="uno-w-full"
+        indeterminate />
+      <JIcon
+        v-else
+        class="i-mdi:check" />
       <VMenu
         v-model="menu"
         :close-on-content-click="false"
@@ -24,16 +24,16 @@
               :key="`${task.id}`"
               :title="task.text">
               <template #append>
-                <VProgressCircular
-                  v-if="task.progress !== 100"
-                  :indeterminate="
-                    task.progress === undefined || task.progress === 0
-                  "
-                  :model-value="task.progress"
-                  size="24" />
-                <VIcon v-else>
-                  <IMdiCheck />
-                </VIcon>
+                <VListItemAction>
+                  <JProgressCircular
+                    v-if="task.progress !== 100"
+                    class="uno-w-15"
+                    :indeterminate="!!task.progress"
+                    :value="task.progress" />
+                  <JIcon
+                    v-else
+                    class="i-mdi:check" />
+                </VListItemAction>
               </template>
             </VListItem>
           </VList>
@@ -49,7 +49,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { taskManager, TaskType } from '@/store/task-manager';
+import { VListItemAction } from 'vuetify/components';
+import { taskManager, TaskType } from '#/store/task-manager';
 
 interface TaskInfo {
   progress: undefined | number;
@@ -62,7 +63,7 @@ const completedTaskList = ref<TaskInfo[]>([]);
 const { t } = useI18n();
 
 const mappedTaskList = computed<TaskInfo[]>(() => {
-  return taskManager.tasks.map((tsk) => {
+  return taskManager.state.value.tasks.map((tsk) => {
     switch (tsk.type) {
       case TaskType.ConfigSync: {
         return {

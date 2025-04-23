@@ -28,7 +28,7 @@
             class="text-h6 font-weight-heavy"
             :class="{'text-center': !$vuetify.display.mdAndUp }">
             <RouterLink
-              class="link pa-0 text-truncate font-weight-medium mt-1 d-block"
+              class="link pa-0 text-truncate font-weight-medium d-block mt-1"
               :to="getItemDetailsLink(currentSeries)">
               {{ currentSeries.Name }}
             </RouterLink>
@@ -306,26 +306,33 @@ import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 import { getUserLibraryApi } from '@jellyfin/sdk/lib/utils/api/user-library-api';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { getItemDetailsLink, getMediaStreams } from '@/utils/items';
-import { getItemizedSelect } from '@/utils/forms';
-import { useBaseItem } from '@/composables/apis';
-import { useItemBackdrop } from '@/composables/backdrop';
-import { useItemPageTitle } from '@/composables/page-title';
+import { getItemDetailsLink, getMediaStreams } from '#/utils/items';
+import { getItemizedSelect } from '#/utils/forms';
+import { useBaseItem } from '#/composables/apis';
+import { useItemBackdrop } from '#/composables/backdrop';
+import { useItemPageTitle } from '#/composables/page-title';
 
 const route = useRoute('/genre/[itemId]');
 
-const { data: item } = await useBaseItem(getUserLibraryApi, 'getItem')(() => ({
-  itemId: route.params.itemId
-}));
-const { data: relatedItems } = await useBaseItem(getLibraryApi, 'getSimilarItems')(() => ({
-  itemId: route.params.itemId,
-  limit: 12
-}));
+const [
+  { data: item },
+  { data: relatedItems },
+  { data: childItems }
+] = await Promise.all([
+  useBaseItem(getUserLibraryApi, 'getItem')(() => ({
+    itemId: route.params.itemId
+  })),
+  useBaseItem(getLibraryApi, 'getSimilarItems')(() => ({
+    itemId: route.params.itemId,
+    limit: 12
+  })),
+  useBaseItem(getItemsApi, 'getItems')(() => ({
+    parentId: route.params.itemId
+  }))
+]);
+
 const { data: currentSeries } = await useBaseItem(getUserLibraryApi, 'getItem')(() => ({
   itemId: item.value.SeriesId ?? ''
-}));
-const { data: childItems } = await useBaseItem(getItemsApi, 'getItems')(() => ({
-  parentId: item.value.Id
 }));
 
 const selectedSource = ref<MediaSourceInfo>();

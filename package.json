@@ -23,16 +23,20 @@
     "yarn": "yarn is not supported. Please use npm"
   },
   "scripts": {
-    "lint": "npm run lint --workspaces",
-    "lint:fix": "npm run lint:fix --workspaces",
-    "check:types": "npm run check:types --workspaces"
+    "lint": "npm run lint -ws --if-present",
+    "lint:fix": "npm run lint:fix -ws --if-present",
+    "check:types": "npm run check:types -ws --if-present",
+    "analyze:cycles": "npm run analyze:cycles -ws --if-present",
+    "test": "npm run test -ws --if-present"
   },
   "devDependencies": {
-    "@eslint/config-inspector": "0.5.6",
-    "@types/node": "22.10.1",
-    "eslint": "9.15.0",
-    "jiti": "2.4.0",
-    "typescript": "5.7.2",
-    "vue-tsc": "2.1.10"
+    "@eslint/config-inspector": "1.0.2",
+    "@types/node": "22.13.14",
+    "eslint": "9.23.0",
+    "jiti": "2.4.2",
+    "storybook": "8.6.11",
+    "typescript": "5.8.2",
+    "vitest": "3.0.9",
+    "vue-tsc": "2.2.8"
   }
 }

@@ -1,7 +1,18 @@
 {
-  "extends": "./typescript/base.json",
+  "extends": "./src/typescript.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "baseUrl": "."
+  },
+  "exclude": [
+    "dist",
+    "node_modules",
+    "coverage"
+  ],
   "include": [
-    "eslint/**/*.ts",
-    "*.ts"
+    "**/*.ts",
+    "**/*.vue",
+    "**/*d.ts",
+    "**/*.json"
   ]
 }

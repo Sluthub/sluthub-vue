@@ -26,7 +26,7 @@
 import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api';
 import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 import { ref } from 'vue';
-import { remote } from '@/plugins/remote';
+import { remote } from '#/plugins/remote';
 
 interface ITreeNode {
   id: string;
@@ -63,7 +63,7 @@ async function fetchChildItems(node: ITreeNode): Promise<void> {
   const libraryItems
     = (
       await remote.sdk.newUserApi(getItemsApi).getItems({
-        userId: remote.auth.currentUserId ?? '',
+        userId: remote.auth.currentUserId.value,
         parentId: node.id,
         sortBy: ['SortName']
       })

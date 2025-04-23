@@ -1,25 +1,17 @@
 import { getSystemApi } from '@jellyfin/sdk/lib/utils/api/system-api';
-import { computedAsync, useMediaControls, useMediaQuery, useNetwork, useNow, useScroll } from '@vueuse/core';
+import {
+  computedAsync,
+  useMediaControls,
+  useMediaQuery,
+  useNetwork,
+  useNow,
+  useDocumentVisibility,
+  useWindowScroll
+} from '@vueuse/core';
 import { computed, shallowRef } from 'vue';
-import { remote } from '@/plugins/remote';
-import { isNil } from '@/utils/validation';
-import { router } from '@/plugins/router';
-
-/**
- * This file contains global variables (specially VueUse refs) that are used multiple times across the client.
- * VueUse composables will set new event handlers, so it's more
- * efficient to reuse those, both in components and TS files.
- */
-
-export const DEFAULT_TYPOGRAPHY = 'Figtree Variable';
-/**
- * Type for the different typography choices across the application
- *
- * default: Default application typography.
- *
- * system: System typography
- */
-export type TypographyChoices = 'default' | 'system' | (string & {});
+import { isNil } from '@jellyfin-vue/shared/validation';
+import { remote } from '#/plugins/remote';
+import { router } from '#/plugins/router';
 
 /**
  * == BLURHASH DEFAULTS ==
@@ -40,7 +32,12 @@ export const now = useNow();
 /**
  * Reactive window scroll
  */
-export const windowScroll = useScroll(globalThis);
+export const windowScroll = useWindowScroll();
+/**
+ * Reactive document visibility
+ */
+const documentVisibility = useDocumentVisibility();
+export const isDocumentVisible = computed(() => documentVisibility.value === 'visible');
 /**
  * Ref to the local media player
  */
@@ -57,10 +54,6 @@ export const mediaWebAudio = {
   sourceNode: undefined as undefined | MediaElementAudioSourceNode,
   gainNode: undefined as undefined | GainNode
 };
-/**
- * Reactively tracks if the user wants animations (false) or not (true).
- */
-export const prefersNoMotion = useMediaQuery('(prefers-reduced-motion:reduce)');
 
 /**
  * Reactively tracks if the user wants transparency effects (true) or not (false).
@@ -81,12 +74,6 @@ export const hasTouch = useMediaQuery('(any-pointer:coarse)');
 export const hasHDRDisplay = useMediaQuery('(video-dynamic-range:high)');
 
 /**
- * Track severely underpowered devices:
- * https://developer.mozilla.org/en-US/docs/Web/CSS/@media/update
- */
-export const isSlow = useMediaQuery('(update:slow)');
-
-/**
  * Whether the layout must use transparency effects
  */
 export const transparencyEffects = computed(() => !prefersNoTransparency.value && router.currentRoute.value.meta.layout.transparent);
@@ -105,7 +92,7 @@ export const isConnectedToServer = computedAsync(async () => {
   const socket = remote.socket.isConnected.value;
   const networkAPI = network.isOnline.value;
 
-  if (!isNil(remote.auth.currentServer) || !socket || !networkAPI) {
+  if (!isNil(remote.auth.currentServer.value) || !socket || !networkAPI) {
     try {
       await remote.sdk.newUserApi(getSystemApi).getPingSystem();
 

@@ -1,25 +1,26 @@
 <template>
   <span ref="container">
     <template
-      v-for="(item, index) of playbackManager.queue"
+      v-for="(item, index) of playbackManager.queue.value"
       :key="item.Id">
       <JHover v-slot="{ isHovering }">
         <VListItem
           :title="item.Name ?? ''"
           :subtitle="getArtists(item)"
-          class="grab-cursor"
+          class="uno-cursor-grab"
           :class="{ 'text-primary font-weight-bold': isPlaying(index) }"
-          @click="playbackManager.currentItemIndex = index">
+          @click="playbackManager.currentItemIndex.value = index">
           <template #prepend>
             <VListItemAction
               :key="index"
+              class="uno-min-w-10"
               start>
-              <VIcon>
-                <template v-if="!isHovering">
-                  {{ index + 1 }}
-                </template>
-                <IMdiDragHorizontal v-else />
-              </VIcon>
+              <template v-if="!isHovering">
+                {{ index + 1 }}
+              </template>
+              <JIcon
+                v-else
+                class="i-mdi:drag-horizontal" />
             </VListItemAction>
             <VAvatar>
               <BlurhashImage :item="item" />
@@ -43,9 +44,9 @@
 <script setup lang="ts">
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client';
 import Sortable from 'sortablejs';
-import { onBeforeUnmount, watch, useTemplateRef } from 'vue';
-import { isNumber } from '@/utils/validation';
-import { playbackManager } from '@/store/playback-manager';
+import { watch, useTemplateRef, onScopeDispose } from 'vue';
+import { isNumber } from '@jellyfin-vue/shared/validation';
+import { playbackManager } from '#/store/playback-manager';
 
 let sortable: Sortable | undefined;
 const container = useTemplateRef<HTMLSpanElement>('container');
@@ -64,7 +65,7 @@ function destroy(): void {
  * Checks if the item in the current position is playing
  */
 function isPlaying(index: number): boolean {
-  return index === playbackManager.currentItemIndex;
+  return index === playbackManager.currentItemIndex.value;
 }
 
 /**
@@ -86,9 +87,9 @@ watch(container, () => {
         const oldIndex = e.oldIndex;
 
         if (isNumber(oldIndex)) {
-          const item = playbackManager.queue[oldIndex];
+          const item = playbackManager.queue.value[oldIndex];
 
-          if (item.Id && isNumber(e.newIndex)) {
+          if (item?.Id && isNumber(e.newIndex)) {
             playbackManager.changeItemPosition(item.Id, e.newIndex);
           }
         }
@@ -97,11 +98,5 @@ watch(container, () => {
   }
 });
 
-onBeforeUnmount(destroy);
+onScopeDispose(() => destroy());
 </script>
-
-<style scoped>
-.grab-cursor {
-  cursor: grab;
-}
-</style>

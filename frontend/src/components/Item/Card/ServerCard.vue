@@ -14,25 +14,19 @@
           <VBtn
             icon
             disabled>
-            <VIcon>
-              <IMdiInformationOutline />
-            </VIcon>
+            <JIcon class="i-mdi:information-outline" />
           </VBtn>
           <VBtn
             icon
             :disabled="loading || serverInfo.isDefault"
             @click="removeServer">
-            <VIcon>
-              <IMdiDelete />
-            </VIcon>
+            <JIcon class="i-mdi:delete" />
           </VBtn>
           <VBtn
             icon
             :disabled="loading"
             @click="setServer">
-            <VIcon>
-              <IMdiArrowRight />
-            </VIcon>
+            <JIcon class="i-mdi:arrow-right" />
           </VBtn>
         </VCardActions>
       </VCol>
@@ -43,8 +37,8 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 import { useRouter } from 'vue-router';
-import { remote } from '@/plugins/remote';
-import type { ServerInfo } from '@/plugins/remote/auth';
+import { remote } from '#/plugins/remote';
+import type { ServerInfo } from '#/plugins/remote/auth';
 
 const { serverInfo } = defineProps<{ serverInfo: ServerInfo }>();
 

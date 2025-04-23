@@ -13,9 +13,7 @@
             :src="item.ImageUrl"
             :alt="item.Name ?? $t('imageSearchResult')"
             once>
-            <VIcon>
-              <IMdiImage />
-            </VIcon>
+            <JIcon class="i-mdi:image" />
           </JImg>
         </template>
         <template #title>
@@ -35,7 +33,7 @@ import type {
   RemoteSearchResult
 } from '@jellyfin/sdk/lib/generated-client';
 import { computed } from 'vue';
-import { getShapeFromItemType } from '@/utils/items';
+import { getShapeFromItemType } from '#/utils/items';
 
 const { items, itemType } = defineProps<{
   items: RemoteSearchResult[];

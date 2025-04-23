@@ -8,16 +8,12 @@
       :loading="loading"
       :disabled="disabled"
       @click.prevent="playOrResume">
-      <VIcon
+      <JIcon
         v-if="shuffle"
-        :size="fab ? 36 : undefined">
-        <IMdiShuffle />
-      </VIcon>
-      <VIcon
+        class="i-mdi-shuffle" />
+      <JIcon
         v-else
-        :size="fab ? 36 : undefined">
-        <IMdiPlay />
-      </VIcon>
+        class="i-mdi-play" />
     </VBtn>
     <VBtn
       v-else-if="!fab"
@@ -42,9 +38,9 @@
 <script setup lang="ts">
 import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client';
 import { ref } from 'vue';
-import { playbackManager } from '@/store/playback-manager';
-import { canPlay, canResume } from '@/utils/items';
-import { ticksToMs } from '@/utils/time';
+import { playbackManager } from '#/store/playback-manager';
+import { canPlay, canResume } from '#/utils/items';
+import { ticksToMs } from '#/utils/time';
 
 const {
   item,

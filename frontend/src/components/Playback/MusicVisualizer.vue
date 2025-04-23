@@ -3,9 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, useTemplateRef, watch } from 'vue';
+import { onScopeDispose, useTemplateRef, watch } from 'vue';
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
-import { mediaWebAudio } from '@/store';
+import { mediaWebAudio } from '#/store';
 
 let visualizerInstance: AudioMotionAnalyzer | undefined;
 const visualizerElement = useTemplateRef<HTMLDivElement>('visualizerElement');
@@ -40,5 +40,5 @@ watch(visualizerElement, () => {
   }
 });
 
-onBeforeUnmount(destroy);
+onScopeDispose(() => destroy());
 </script>

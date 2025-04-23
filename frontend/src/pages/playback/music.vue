@@ -1,20 +1,15 @@
 <template>
-  <VMain v-if="playbackManager.queue">
+  <JMain v-if="playbackManager.queue">
     <VAppBar color="transparent">
       <AppBarButtonLayout @click="$router.back()">
         <template #icon>
-          <VIcon>
-            <IMdiArrowLeft />
-          </VIcon>
+          <JIcon class="i-mdi:arrow-left" />
         </template>
       </AppBarButtonLayout>
       <VSpacer />
       <AppBarButtonLayout @click="isVisualizing = !isVisualizing">
         <template #icon>
-          <VIcon>
-            <IDashiconsAlbum v-if="isVisualizing" />
-            <IMdiChartBar v-else />
-          </VIcon>
+          <JIcon :class="isVisualizing ? 'i-dashicons:album' : 'mdi:chart-bar'" />
         </template>
       </AppBarButtonLayout>
     </VAppBar>
@@ -34,7 +29,7 @@
           @swiper="(swiper) => swiperInstance = swiper"
           @slide-change="onSlideChange">
           <SwiperSlide
-            v-for="(item, index) in playbackManager.queue"
+            v-for="(item, index) in playbackManager.queue.value"
             :key="`${item.Id}-${index}`"
             :virtual-index="`${item.Id}-${index}`"
             class="d-flex justify-center">
@@ -53,7 +48,7 @@
             <VCol>
               <VRow>
                 <h1 class="text-h4">
-                  {{ playbackManager.currentItem?.Name }}
+                  {{ playbackManager.currentItem.value?.Name }}
                 </h1>
               </VRow>
               <VRow>
@@ -65,8 +60,8 @@
             <!-- TODO: Fix alignment with the end time of TimeSlider -->
             <VCol class="d-flex justify-end">
               <LikeButton
-                v-if="playbackManager.currentItem"
-                :item="playbackManager?.currentItem"
+                v-if="playbackManager.currentItem.value"
+                :item="playbackManager?.currentItem.value"
                 size="x-large" />
             </VCol>
           </VRow>
@@ -83,7 +78,7 @@
         </VCol>
       </VRow>
     </VCol>
-  </VMain>
+  </JMain>
 </template>
 
 <route lang="yaml">
@@ -105,12 +100,12 @@ import 'swiper/css/virtual';
 import { A11y, EffectCoverflow, Virtual } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { computed, shallowRef, watchEffect } from 'vue';
-import { playbackGuard } from '@/plugins/router/middlewares/playback';
-import { playbackManager } from '@/store/playback-manager';
-import { isNil } from '@/utils/validation';
-import { usePlayback } from '@/composables/use-playback';
-import { useItemBackdrop } from '@/composables/backdrop';
-import { useItemPageTitle } from '@/composables/page-title';
+import { isNil } from '@jellyfin-vue/shared/validation';
+import { playbackGuard } from '#/plugins/router/middlewares/playback';
+import { playbackManager } from '#/store/playback-manager';
+import { usePlayback } from '#/composables/use-playback';
+import { useItemBackdrop } from '#/composables/backdrop';
+import { useItemPageTitle } from '#/composables/page-title';
 
 defineOptions({
   beforeRouteEnter: playbackGuard
@@ -129,17 +124,17 @@ const coverflowEffect = {
 
 const isVisualizing = shallowRef(false);
 const artistString = computed(() =>
-  playbackManager.currentItem?.Artists?.join(', ')
+  playbackManager.currentItem.value?.Artists?.join(', ')
 );
 
 const swiperInstance = shallowRef<SwiperType>();
 
-useItemBackdrop(() => playbackManager.currentItem, 0.75);
-useItemPageTitle(() => playbackManager.currentItem);
+useItemBackdrop(playbackManager.currentItem, 0.75);
+useItemPageTitle(playbackManager.currentItem);
 
 watchEffect(() => {
-  if (swiperInstance.value && !isNil(playbackManager.currentItemIndex)) {
-    swiperInstance.value.slideTo(playbackManager.currentItemIndex);
+  if (swiperInstance.value && !isNil(playbackManager.currentItemIndex.value)) {
+    swiperInstance.value.slideTo(playbackManager.currentItemIndex.value);
   }
 }
 );
@@ -150,7 +145,7 @@ watchEffect(() => {
 function onSlideChange(): void {
   const index = swiperInstance.value?.activeIndex ?? 0;
 
-  playbackManager.currentItemIndex = index;
+  playbackManager.currentItemIndex.value = index;
 }
 </script>
 

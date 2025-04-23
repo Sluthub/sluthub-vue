@@ -1,0 +1,26 @@
+{
+  "name": "@jellyfin-vue/shared",
+  "type": "module",
+  "description": "Shared code between Jellyfin Vue packages",
+  "exports": {
+    "./validation": "./src/validation.ts",
+    "./html": "./src/html.ts",
+    "./colors": "./src/colors.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:inspect": "eslint-config-inspector",
+    "check:types": "vue-tsc",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@jellyfin-vue/configs": "*",
+    "type-fest": "4.38.0",
+    "vitest": "3.0.9"
+  },
+  "dependencies": {
+    "dompurify": "3.2.5",
+    "marked": "15.0.7"
+  }
+}

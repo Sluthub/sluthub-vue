@@ -1,102 +1,102 @@
 <template>
-  <VBtn
-    icon
-    class="align-self-center">
-    <VIcon>
-      <IMdiCog />
-    </VIcon>
-    <VTooltip
-      :text="$t('playbackSettings')"
-      location="top" />
-    <VMenu
-      v-model="menuModel"
-      :close-on-content-click="false"
-      :transition="'slide-y-transition'"
-      location="top">
-      <VCard min-width="300">
-        <VCardText>
-          <VRow align="center">
-            <VCol :cols="4">
-              <label>{{ $t('quality') }}</label>
-            </VCol>
-            <VCol :cols="8">
-              <VSelect
-                density="comfortable"
-                hide-details
-                disabled />
-            </VCol>
-          </VRow>
-          <VRow align="center">
-            <VCol :cols="4">
-              <label>{{ $t('audio') }}</label>
-            </VCol>
-            <VCol :cols="8">
-              <MediaStreamSelector
-                v-if="playbackManager.currentItemAudioTracks"
-                :media-streams="playbackManager.currentItemAudioTracks"
-                type="Audio"
-                :default-stream-index="playbackManager.currentAudioStreamIndex"
-                @input="playbackManager.currentAudioStreamIndex = $event" />
-            </VCol>
-          </VRow>
-          <VRow
-            v-if="!$vuetify.display.smAndUp"
-            align="center">
-            <VCol :cols="4">
-              <label>{{ $t('subtitles') }}</label>
-            </VCol>
-            <VCol :cols="8">
-              <MediaStreamSelector
-                v-if="playbackManager.currentItemSubtitleTracks"
-                :media-streams="playbackManager.currentItemSubtitleTracks"
-                type="Subtitle"
-                :default-stream-index="
-                  playbackManager.currentSubtitleStreamIndex
-                "
-                @input="playbackManager.currentSubtitleStreamIndex = $event" />
-            </VCol>
-          </VRow>
-          <VRow align="center">
-            <VCol :cols="4">
-              <label>{{ $t('speed') }}</label>
-            </VCol>
-            <VCol :cols="8">
-              <VCombobox
-                v-model="playbackSpeed"
-                density="comfortable"
-                :items="playbackItems"
-                item-title="title"
-                item-value="speed"
-                :prefix
-                :rules="validationRules"
-                @update:focused="onFocus" />
-            </VCol>
-          </VRow>
-          <VRow align="center">
-            <VCol :cols="4">
-              <label>{{ $t('stretch') }}</label>
-            </VCol>
-            <VCol
-              :cols="8"
-              class="text-right">
-              <VSwitch
-                v-model="playerElement.isStretched.value"
-                color="primary"
-                hide-details />
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-    </VMenu>
-  </VBtn>
+  <JTooltip
+    :text="$t('playbackSettings')"
+    position="top">
+    <VBtn
+      icon
+      class="align-self-center">
+      <JIcon class="i-mdi:cog" />
+      <VMenu
+        v-model="menuModel"
+        :close-on-content-click="false"
+        :transition="'slide-y-transition'"
+        location="top">
+        <VCard min-width="300">
+          <VCardText>
+            <VRow align="center">
+              <VCol :cols="4">
+                <label>{{ $t('quality') }}</label>
+              </VCol>
+              <VCol :cols="8">
+                <VSelect
+                  density="comfortable"
+
+                  disabled
+                  hide-details />
+              </VCol>
+            </VRow>
+            <VRow align="center">
+              <VCol :cols="4">
+                <label>{{ $t('audio') }}</label>
+              </VCol>
+              <VCol :cols="8">
+                <MediaStreamSelector
+                  v-if="playbackManager.currentItemAudioTracks.value"
+                  :media-streams="playbackManager.currentItemAudioTracks.value"
+                  type="Audio"
+                  :default-stream-index="playbackManager.currentAudioTrack.value?.Index"
+                  @input="playbackManager.currentAudioTrack.value = $event ?? -1" />
+              </VCol>
+            </VRow>
+            <VRow
+              v-if="!$vuetify.display.smAndUp"
+              align="center">
+              <VCol :cols="4">
+                <label>{{ $t('subtitles') }}</label>
+              </VCol>
+              <VCol :cols="8">
+                <MediaStreamSelector
+                  v-if="playbackManager.currentItemSubtitleTracks.value"
+                  :media-streams="playbackManager.currentItemSubtitleTracks.value"
+                  type="Subtitle"
+                  :default-stream-index="
+                    playbackManager.currentSubtitleTrack.value?.Index
+                  "
+                  @input="playbackManager.currentSubtitleTrack.value = $event ?? -1" />
+              </VCol>
+            </VRow>
+            <VRow align="center">
+              <VCol :cols="4">
+                <label>{{ $t('speed') }}</label>
+              </VCol>
+              <VCol :cols="8">
+                <VCombobox
+                  v-model="playbackSpeed"
+                  density="comfortable"
+                  :items="playbackItems"
+                  item-title="title"
+                  item-value="speed"
+                  :prefix
+                  :rules="validationRules"
+                  @update:focused="onFocus" />
+              </VCol>
+            </VRow>
+            <VRow align="center">
+              <VCol :cols="4">
+                <label>{{ $t('stretch') }}</label>
+              </VCol>
+              <VCol
+                :cols="8"
+                class="text-right">
+                <VSwitch
+                  v-model="playerElement.state.value.isStretched"
+                  color="primary"
+                  hide-details />
+              </VCol>
+            </VRow>
+          </VCardText>
+        </VCard>
+      </VMenu>
+    </VBtn>
+  </JTooltip>
 </template>
 
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { playbackManager } from '@/store/playback-manager';
-import { playerElement } from '@/store/player-element';
-import { isObj, isStr, isUndef } from '@/utils/validation';
+import { isObj, isStr, isUndef } from '@jellyfin-vue/shared/validation';
+import { playbackManager } from '#/store/playback-manager';
+import { playerElement } from '#/store/player-element';
 
 const menuModel = defineModel<boolean>();
 const { t } = useI18n();
@@ -111,10 +111,10 @@ type PlaybackSpeedValue = string | typeof playbackItems.value[number] | null;
 const _playbackSpeed = shallowRef<PlaybackSpeedValue>();
 const playbackSpeed = computed({
   get: () => {
-    const playbackSpeedIndex = defaultPlaybackSpeeds.indexOf(playbackManager.playbackSpeed);
+    const playbackSpeedIndex = defaultPlaybackSpeeds.indexOf(playbackManager.playbackSpeed.value);
 
     if (isUndef(_playbackSpeed.value)) {
-      return playbackSpeedIndex === -1 ? String(playbackManager.playbackSpeed) : playbackItems.value[playbackSpeedIndex];
+      return playbackSpeedIndex === -1 ? String(playbackManager.playbackSpeed.value) : playbackItems.value[playbackSpeedIndex];
     } else {
       return _playbackSpeed.value;
     }
@@ -123,7 +123,7 @@ const playbackSpeed = computed({
     _playbackSpeed.value = val;
 
     if (validationRules.every(rule => rule(val) === true)) {
-      playbackManager.playbackSpeed = isObj(val) ? val.speed : Number(val);
+      playbackManager.playbackSpeed.value = isObj(val) ? val.speed : Number(val);
     }
   }
 });
@@ -148,7 +148,7 @@ const validationRules = [
  */
 function onFocus(e: boolean): void {
   if (!e) {
-    const playbackSpeedIndex = defaultPlaybackSpeeds.indexOf(playbackManager.playbackSpeed);
+    const playbackSpeedIndex = defaultPlaybackSpeeds.indexOf(playbackManager.playbackSpeed.value);
 
     if (playbackSpeedIndex !== -1) {
       _playbackSpeed.value = playbackItems.value[playbackSpeedIndex];
