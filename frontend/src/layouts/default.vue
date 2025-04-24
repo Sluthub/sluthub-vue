@@ -3,7 +3,7 @@
   <NavigationDrawer
     :order="display.mobile.value ? -1 : undefined"
     :drawer-items="drawerItems as DrawerItem[]" />
-  <VMain>
+  <JMain>
     <div class="pa-s">
       <slot />
     </div>

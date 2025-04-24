@@ -51,11 +51,9 @@
 import { computed, inject, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { RouteNamedMap } from 'vue-router/auto-routes';
-import type { getLibraryIcon } from '@/utils/items';
-import IMovieOpenPlus from 'virtual:icons/mdi/movie-open-plus';
-import IMdiMessageText from 'virtual:icons/mdi/message-text';
-import { transparencyEffects } from '@/store';
-import { JView_isRouting } from '@/store/keys';
+import type { getLibraryIcon } from '#/utils/items';
+import { transparencyEffects } from '#/store';
+import { JView_isRouting } from '#/store/keys';
 
 export interface DrawerItem {
   icon: ReturnType<typeof getLibraryIcon>;
@@ -81,12 +79,12 @@ const items = [
     to: '/'
   },
   {
-    icon: IMovieOpenPlus,
+    icon: 'i-mdi:movie-open-plus',
     title: t('requests'),
     href: `https://requests.${window.location.hostname}/`
   },
   {
-    icon: IMdiMessageText,
+    icon: 'i-mdi:message-text',
     title: t('discord'),
     href: `https://discord.gg/jUNCqtGf3W`
   }
