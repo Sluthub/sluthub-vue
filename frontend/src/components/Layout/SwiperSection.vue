@@ -48,9 +48,7 @@
             text
             link
             margin
-            text
-            :overlay="type ? type !== `libraries` : true"
-            link />
+            :overlay="type ? type !== `libraries` : true" />
         </SwiperSlide>
       </Swiper>
     </VCol>
