@@ -1,14 +1,16 @@
 import { basename, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { defineConfig } from 'eslint/config';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import { findUpSync } from 'find-up-simple';
 import unicorn from 'eslint-plugin-unicorn';
 import js from '@eslint/js';
+import css from '@eslint/css';
+import json from '@eslint/json';
 import stylistic from '@stylistic/eslint-plugin';
 import { configs as dependConfigs } from 'eslint-plugin-depend';
 import gitignore from 'eslint-config-flat-gitignore';
 import fileProgress from 'eslint-plugin-file-progress';
-import { eqeqeqConfig } from '../shared';
+import { eqeqeqConfig, ignoresForOtherLangs } from '../shared';
 
 const CI_environment = !!process.env.CI;
 
@@ -61,11 +63,12 @@ export function getBaseConfig(packageName: string, forceCache = !CI_environment,
   }
 
   return defineConfig([
-    { ...js.configs.recommended,
+    {
+      ...js.configs.recommended,
       name: '(@jellyfin-vue/configs/lint/base - eslint) Extended config from plugin'
     },
     {
-      ...unicorn.configs['recommended'],
+      ...unicorn.configs.recommended,
       name: '(@jellyfin-vue/configs/lint/base - unicorn) Extended config from plugin'
     },
     {
@@ -100,6 +103,7 @@ export function getBaseConfig(packageName: string, forceCache = !CI_environment,
         'unicorn/consistent-function-scoping': 'off',
         'unicorn/prevent-abbreviations': 'off',
         'unicorn/no-await-expression-member': 'off',
+        'unicorn/no-for-loop': 'off',
         /**
          * See https://github.com/jellyfin/jellyfin-vue/pull/2361
          */
@@ -160,6 +164,32 @@ export function getBaseConfig(packageName: string, forceCache = !CI_environment,
         ...gitignore().ignores
       ]
     },
+    ...['json', 'jsonc', 'json5'].flatMap((lang) => {
+      const files = [`**/*.${lang}`];
+
+      return [
+        globalIgnores(files, `(@jellyfin-vue/configs/lint/base - ${lang}) Ignore globally matched files`),
+        {
+          ...json.configs.recommended,
+          files,
+          ignores: [...ignoresForOtherLangs, 'package-lock.json', ...files.map(file => `!${file}`)],
+          language: `json/${lang}`,
+          name: `(@jellyfin-vue/configs/lint/base - ${lang}) Extended config from plugin`
+        }];
+    }),
+    ...['css'].flatMap((lang) => {
+      const files = [`**/*.${lang}`];
+
+      return [
+        globalIgnores(files, `(@jellyfin-vue/configs/lint/base - ${lang}) Ignore globally matched files`),
+        {
+          ...css.configs.recommended,
+          files,
+          language: 'css/css',
+          ignores: [...ignoresForOtherLangs, ...files.map(file => `!${file}`)],
+          name: `(@jellyfin-vue/configs/lint/base - ${lang}) Extended config from plugin`
+        }];
+    }),
     /** File progress plugin */
     {
       name: '(@jellyfin-vue/configs/lint/base) Linting progress report',

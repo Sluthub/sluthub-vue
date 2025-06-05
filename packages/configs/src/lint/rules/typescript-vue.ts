@@ -4,7 +4,6 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import regexp from 'eslint-plugin-regexp';
 import jsdoc from 'eslint-plugin-jsdoc';
 import eslintImportX from 'eslint-plugin-import-x';
-// @ts-expect-error - No types available
 import vueScopedCSS from 'eslint-plugin-vue-scoped-css';
 import css from 'eslint-plugin-css';
 import vue from 'eslint-plugin-vue';
@@ -191,8 +190,8 @@ const vue_config = defineConfig([
             lang: 'ts'
           }
         }
-      ]
-
+      ],
+      'vue/define-props-destructuring': 'error'
     }
   }
 ]);

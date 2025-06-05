@@ -1,5 +1,4 @@
 import type { JTransitionProps } from '@jellyfin-vue/ui-toolkit/components';
-import type en from '#/../locales/en.json';
 import type { RemotePlugin } from '#/plugins/remote/types';
 
 /**
@@ -28,12 +27,6 @@ declare module 'vue' {
   interface ComponentCustomProperties {
     readonly $remote: RemotePlugin;
   }
-}
-
-declare module 'vue-i18n' {
-  type messages = typeof en;
-
-  export interface DefineLocaleMessage extends messages {}
 }
 
 /**

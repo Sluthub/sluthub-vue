@@ -6,6 +6,15 @@
         "npm"
       ],
       "matchDepTypes": [
+        "dependencies"
+      ],
+      "groupName": "npm (runtime)"
+    },
+    {
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
         "devDependencies"
       ],
       "groupName": "npm (development)"
@@ -15,9 +24,12 @@
         "npm"
       ],
       "matchDepTypes": [
-        "dependencies"
+        "peerDependencies"
       ],
-      "groupName": "npm (runtime)"
+      "matchUpdateTypes": [
+        "pin"
+      ],
+      "enabled": false
     },
     {
       "matchManagers": [
@@ -27,25 +39,12 @@
       "groupName": "ci"
     },
     {
-      "matchPackageNames": [
-        "vue-i18n",
-        "@intlify/unplugin-vue-i18n"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "enabled": false
-    },
-    {
       "matchFileNames": [
         "packaging/tauri/**",
         "packages/tauri-runtime/**"
       ],
       "separateMajorMinor": false,
-      "groupName": "tauri",
-      "matchPackageNames": [
-        "!vite"
-      ]
+      "groupName": "tauri"
     },
     {
       "matchUpdateTypes": [

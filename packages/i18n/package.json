@@ -1,0 +1,29 @@
+{
+  "name": "@jellyfin-vue/i18n",
+  "type": "module",
+  "description": "All internacionalization files for Jellyfin Vue",
+  "exports": {
+    ".": {
+     "import": "./src/index.ts",
+     "types": "./index.d.ts"
+   },
+    "./vite": "./src/vite.ts"
+  },
+  
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:inspect": "eslint-config-inspector",
+    "check:types": "vue-tsc"
+  },
+  "devDependencies": {
+    "@jellyfin-vue/configs": "*",
+    "knitwork": "1.2.0"
+  },
+  "peerDependencies": {
+    "@vue/shared": "*",
+    "date-fns": "*",
+    "i18next": "*",
+    "vuetify": "*"
+  }
+}

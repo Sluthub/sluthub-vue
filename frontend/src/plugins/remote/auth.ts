@@ -9,8 +9,8 @@ import { getBrandingApi } from '@jellyfin/sdk/lib/utils/api/branding-api';
 import { getUserApi } from '@jellyfin/sdk/lib/utils/api/user-api';
 import { computed } from 'vue';
 import { isAxiosError, isNil, sealed } from '@jellyfin-vue/shared/validation';
+import i18next from 'i18next';
 import SDK, { useOneTimeAPI } from './sdk/sdk-utils';
-import { i18n } from '#/plugins/i18n';
 import { useSnackbar } from '#/composables/use-snackbar';
 import { BaseState } from '#/store/super/base-state';
 
@@ -43,7 +43,7 @@ class RemotePluginAuth extends BaseState<AuthState> {
   public readonly servers = computed(() => this._state.value.servers);
   public readonly currentServer = computed(() => this._state.value.servers[this._state.value.currentServerIndex]);
   public readonly currentUser = computed(() => this._state.value.users[this._state.value.currentUserIndex]);
-  public readonly currentUserId = computed(() => this.currentUser.value.Id);
+  public readonly currentUserId = computed(() => this.currentUser.value?.Id);
   public readonly currentUserToken = computed(() => this._getUserAccessToken(this.currentUser.value));
   public readonly addedServers = computed(() => this._state.value.servers.length);
 
@@ -131,7 +131,7 @@ class RemotePluginAuth extends BaseState<AuthState> {
     serverUrl: string,
     isDefault = false
   ): Promise<void> => {
-    const { t } = i18n;
+    const { t } = i18next;
 
     serverUrl = serverUrl.replace(/\/$/, '').trim();
 
@@ -210,7 +210,7 @@ class RemotePluginAuth extends BaseState<AuthState> {
       }
     } catch (error: unknown) {
       if (isAxiosError(error)) {
-        const { t } = i18n;
+        const { t } = i18next;
         let errorMessage = t('unexpectedError');
 
         if (!error.response) {

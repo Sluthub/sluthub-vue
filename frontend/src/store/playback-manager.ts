@@ -19,11 +19,11 @@ import { getTvShowsApi } from '@jellyfin/sdk/lib/utils/api/tv-shows-api';
 import { computedAsync, watchThrottled } from '@vueuse/core';
 import { computed, watch, watchEffect } from 'vue';
 import { isNil, sealed } from '@jellyfin-vue/shared/validation';
+import i18next from 'i18next';
 import { useBaseItem } from '#/composables/apis';
 import { useSnackbar } from '#/composables/use-snackbar';
-import { i18n } from '#/plugins/i18n';
 import { remote } from '#/plugins/remote';
-import { apiStore } from '#/store/api';
+import { apiStore } from '#/store/dbs/api';
 import { getImageInfo } from '#/utils/images';
 import { getItemRuntime } from '#/utils/items';
 import playbackProfile from '#/utils/playback-profiles';
@@ -124,8 +124,8 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   /**
    * Map ids into BaseItemDto's objects of the queue
    */
-  public readonly queue = computed(() => apiStore.getItemsById(this._state.value.queue) as BaseItemDto[]);
-  public readonly initiator = computed(() => apiStore.getItemById(this._state.value.playbackInitiatorId));
+  public readonly queue = computedAsync(async () => await apiStore.getItemsById(this._state.value.queue) as BaseItemDto[], []);
+  public readonly initiator = computedAsync(async () => await apiStore.getItemById(this._state.value.playbackInitiatorId));
   public readonly currentItemIndex = computed({
     get: () => this._state.value.currentItemIndex,
     set: (newIndex: number | undefined) => {
@@ -135,11 +135,9 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   });
 
   public readonly currentItemId = computed(() => this._state.value.queue[this.currentItemIndex.value ?? -1]);
-  public readonly currentItem = computed<BaseItemDto | undefined>((previous) => {
-    const newItem = this.queue.value[this.currentItemIndex.value ?? -1];
-
-    return newItem?.Id === previous?.Id ? previous : newItem;
-  });
+  public readonly currentItem = computed<BaseItemDto | undefined>(() =>
+    this.queue.value[this.currentItemIndex.value ?? -1]
+  );
 
   public readonly currentMediaSourceIndex = computed(() => this._state.value.mediaSourceIndexes.source);
   public readonly currentMediaSource = computed(() => this.currentItem.value?.MediaSources?.[this.currentMediaSourceIndex.value ?? 0]);
@@ -244,7 +242,7 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   {
     onError: () => {
       this._state.value.status = PlaybackStatus.Error;
-      useSnackbar(i18n.t('cantPlayItem'), 'error');
+      useSnackbar(i18next.t('cantPlayItem'), 'error');
     }
   }
   );
@@ -284,8 +282,8 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   /**
    * Get the media type of the currently playing item
    */
-  private readonly _currentlyPlayingMediaType = computed(() =>
-    apiStore.getItemById(this.currentItemId.value)
+  private readonly _currentlyPlayingMediaType = computedAsync(async () =>
+    (await apiStore.getItemById(this.currentItemId.value))
       ?.MediaType
   );
 
@@ -634,7 +632,10 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
   };
 
   public readonly instantMixFromItem = async (itemId: string): Promise<void> => {
-    const { data: items } = await useBaseItem(getInstantMixApi, 'getInstantMixFromItem', { skipCache: { request: true } })(() => ({
+    const { data: items } = await useBaseItem(
+      getInstantMixApi,
+      'getInstantMixFromItem',
+      { skipCache: { request: true } })(() => ({
       itemId
     }));
 
@@ -805,7 +806,7 @@ class PlaybackManagerStore extends CommonStore<PlaybackManagerState> {
      * == MediaSession API: https://developer.mozilla.org/en-US/docs/Web/API/MediaSession ==
      */
     watchEffect(() => {
-      const { t } = i18n;
+      const { t } = i18next;
 
       globalThis.navigator.mediaSession.metadata = this.currentItem.value
         ? new MediaMetadata({

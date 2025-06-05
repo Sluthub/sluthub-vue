@@ -12,9 +12,19 @@
   "devDependencies": {
     "@jellyfin-vue/configs": "*",
     "find-up-simple": "1.0.1",
-    "pretty-bytes": "6.1.1",
-    "sonda": "0.7.1",
-    "type-fest": "4.38.0",
-    "vite": "6.2.6"
+    "pretty-bytes": "7.0.0",
+    "sonda": "0.7.1"
+  },
+  "peerDependencies": {
+    "type-fest": "*",
+    "vite": "*"
+  },
+  "peerDependenciesMeta": {
+    "type-fest": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
   }
 }

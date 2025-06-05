@@ -1,5 +1,4 @@
 import { resolve } from 'node:path';
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 import Virtual from '@rollup/plugin-virtual';
 import VueDevTools from 'vite-plugin-vue-devtools';
 import Vue from '@vitejs/plugin-vue';
@@ -11,9 +10,9 @@ import UnoCSS from 'unocss/vite';
 import VueRouter from 'unplugin-vue-router/vite';
 import { defineConfig } from 'vite';
 import { JBundle, JMonorepo } from '@jellyfin-vue/vite-plugins';
+import { genVirtualModules } from '@jellyfin-vue/i18n/vite';
 import { JellyfinVueUIToolkit } from '@jellyfin-vue/ui-toolkit/resolver';
 import virtualModules from './scripts/virtual-modules';
-import { localeFilesFolder } from './scripts/paths';
 
 export default defineConfig({
   appType: 'spa',
@@ -25,7 +24,10 @@ export default defineConfig({
         'fetch-priority': 'high'
       }
     }),
-    Virtual(virtualModules),
+    Virtual({
+      ...(await genVirtualModules()),
+      ...virtualModules
+    }),
     VueRouter({
       dts: resolve(import.meta.dirname, 'types/global/routes.d.ts'),
       importMode: 'sync',
@@ -54,14 +56,6 @@ export default defineConfig({
         JellyfinVueUIToolkit()
       ]
     }),
-    VueI18nPlugin({
-      runtimeOnly: true,
-      compositionOnly: true,
-      fullInstall: false,
-      forceStringify: true,
-      include: localeFilesFolder,
-      dropMessageCompiler: true
-    }),
     UnoCSS(),
     VueDevTools()
   ],
@@ -72,7 +66,9 @@ export default defineConfig({
     target: 'esnext',
     cssCodeSplit: true,
     cssMinify: 'lightningcss',
-    modulePreload: false,
+    modulePreload: {
+      polyfill: false
+    },
     reportCompressedSize: false,
     rollupOptions: {
       input: {

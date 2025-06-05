@@ -8,7 +8,7 @@ import AudioMotionAnalyzer from 'audiomotion-analyzer';
 import { mediaWebAudio } from '#/store';
 
 let visualizerInstance: AudioMotionAnalyzer | undefined;
-const visualizerElement = useTemplateRef<HTMLDivElement>('visualizerElement');
+const visualizerElement = useTemplateRef('visualizerElement');
 
 /**
  * Destroy the visualizer instance.
@@ -20,12 +20,12 @@ function destroy(): void {
   }
 }
 
-watch(visualizerElement, () => {
+watch([visualizerElement, mediaWebAudio.sourceNode], () => {
   destroy();
 
-  if (visualizerElement.value) {
+  if (visualizerElement.value && mediaWebAudio.sourceNode.value) {
     visualizerInstance = new AudioMotionAnalyzer(visualizerElement.value, {
-      source: mediaWebAudio.sourceNode,
+      source: mediaWebAudio.sourceNode.value,
       connectSpeakers: false,
       mode: 2,
       gradient: 'prism',
