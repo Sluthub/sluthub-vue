@@ -1,55 +1,41 @@
 {
-  "name": "@jellyfin-vue/configs",
-  "type": "module",
-  "description": "Configuration files for Jellyfin Vue packages",
-  "exports": {
-    "./typescript": "./src/typescript.json",
-    "./lint": "./src/lint/index.ts",
-    "./uno": "./src/uno.ts",
-    "./storybook": "./src/storybook.ts"
-  },
-  "scripts": {
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "lint:inspect": "eslint-config-inspector",
-    "check:types": "vue-tsc"
-  },
-  "devDependencies": {
-    "@chromatic-com/storybook": "3.2.6",
-    "@eslint/css": "0.8.1",
-    "@eslint/js": "9.28.0",
-    "@eslint/json": "0.12.0",
-    "@storybook/addon-a11y": "8.6.14",
-    "@storybook/addon-essentials": "8.6.14",
-    "@storybook/addon-interactions": "8.6.14",
-    "@storybook/blocks": "8.6.14",
-    "@storybook/vue3": "8.6.14",
-    "@storybook/vue3-vite": "8.6.14",
-    "@stylistic/eslint-plugin": "4.4.1",
-    "@unocss/eslint-config": "66.1.3",
-    "eslint-config-flat-gitignore": "2.1.0",
-    "eslint-plugin-css": "0.11.0",
-    "eslint-plugin-depend": "1.2.0",
-    "eslint-plugin-file-progress": "3.0.2",
-    "eslint-plugin-import-x": "4.15.1",
-    "eslint-plugin-jsdoc": "50.7.1",
-    "eslint-plugin-promise": "7.2.1",
-    "eslint-plugin-regexp": "2.8.0",
-    "eslint-plugin-sonarjs": "3.0.2",
-    "eslint-plugin-unicorn": "59.0.1",
-    "eslint-plugin-vue": "10.1.0",
-    "eslint-plugin-vue-scoped-css": "2.10.0",
-    "find-up-simple": "1.0.1",
-    "globals": "16.2.0",
-    "typescript-eslint": "8.33.1",
-    "vue-eslint-parser": "10.1.3"
-  },
-  "peerDependenciesMeta": {
-    "unocss": {
-      "optional": true
+    "name": "@jellyfin-vue/configs",
+    "type": "module",
+    "description": "Configuration files for Jellyfin Vue packages",
+    "exports": {
+        "./typescript": "./src/typescript.json",
+        "./lint": "./src/lint/index.ts",
+        "./uno": "./src/uno.ts",
+        "./storybook": "./src/storybook.ts"
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "lint:inspect": "eslint-config-inspector",
+        "check:types": "vue-tsc"
+    },
+    "devDependencies": {
+        "@eslint/css": "0.9.0",
+        "@eslint/js": "9.30.0",
+        "@eslint/json": "0.12.0",
+        "@jellyfin-vue/shared": "*",
+        "@stylistic/eslint-plugin": "5.0.0",
+        "@unocss/eslint-config": "66.3.2",
+        "eslint-config-flat-gitignore": "2.1.0",
+        "eslint-plugin-css": "0.11.0",
+        "eslint-plugin-depend": "1.2.0",
+        "eslint-plugin-file-progress": "3.0.2",
+        "eslint-plugin-import-x": "4.16.1",
+        "eslint-plugin-jsdoc": "51.2.3",
+        "eslint-plugin-promise": "7.2.1",
+        "eslint-plugin-regexp": "2.9.0",
+        "eslint-plugin-sonarjs": "3.0.4",
+        "eslint-plugin-unicorn": "59.0.1",
+        "eslint-plugin-vue": "10.2.0",
+        "eslint-plugin-vue-scoped-css": "2.10.0",
+        "find-up-simple": "1.0.1",
+        "globals": "16.3.0",
+        "typescript-eslint": "8.35.0",
+        "vue-eslint-parser": "10.1.4"
     }
-  },
-  "peerDependencies": {
-    "unocss": "*"
-  }
 }
