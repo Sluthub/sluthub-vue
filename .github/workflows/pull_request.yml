@@ -71,7 +71,8 @@ jobs:
     name: Quality checks 👌🧪
     if: ${{ always() && !cancelled() }}
     uses: ./.github/workflows/__quality_checks.yml
-    permissions: {}
+    permissions:
+      contents: read
     with:
       commit: ${{ github.event.pull_request.head.sha }}
 
