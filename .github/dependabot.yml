@@ -5,7 +5,7 @@ updates:
   - /
   schedule:
     interval: daily
-    time: 04:00
+    time: "04:00"
     timezone: Europe/Berlin
   open-pull-requests-limit: 2
   rebase-strategy: auto
@@ -25,7 +25,7 @@ updates:
   - /packaging/tauri
   schedule:
     interval: daily
-    time: 04:00
+    time: "04:00"
     timezone: Europe/Berlin
   open-pull-requests-limit: 2
   rebase-strategy: auto
@@ -46,7 +46,7 @@ updates:
   - /packaging/docker
   schedule:
     interval: daily
-    time: 04:00
+    time: "04:00"
     timezone: Europe/Berlin
   open-pull-requests-limit: 2
   rebase-strategy: auto
@@ -66,7 +66,7 @@ updates:
   - /
   schedule:
     interval: daily
-    time: 04:00
+    time: "04:00"
     timezone: Europe/Berlin
   open-pull-requests-limit: 2
   rebase-strategy: auto
