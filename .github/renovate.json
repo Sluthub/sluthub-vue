@@ -1,5 +1,5 @@
 {
-  "timezone": "Europe/Madrid",
+  "timezone": "Europe/Berlin",
   "packageRules": [
     {
       "matchManagers": [
@@ -98,5 +98,6 @@
   ],
   "extends": [
     "mergeConfidence:age-confidence-badges"
-  ]
+  ],
+  "enabled": false
 }
