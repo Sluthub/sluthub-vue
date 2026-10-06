@@ -1,6 +1,11 @@
+import { join } from 'node:path';
 import storybookConfig from '@jellyfin-vue/configs/storybook';
+import { getPackagePath } from '@jellyfin-vue/configs/utils';
 
-storybookConfig.core.builder.options.viteConfigPath = '../../frontend/vite.config.ts';
+storybookConfig.core.builder.options.viteConfigPath = join(
+  getPackagePath('@jellyfin-vue/frontend')!,
+  'vite.config.ts'
+);
 
 // eslint-disable-next-line unicorn/prefer-export-from
 export default storybookConfig;

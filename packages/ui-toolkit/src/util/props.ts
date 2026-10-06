@@ -1,4 +1,4 @@
-import { mergeProps } from 'vue';
+import { mergeProps, type HTMLAttributes } from 'vue';
 
 /**
  * Checks if the component has a click handler (regardless of the modifiers used)
@@ -16,11 +16,11 @@ function hasClickHandler(attrs: Record<string, unknown>) {
 /**
  * Gets the base props for every component.
  */
-export function getBaseProps(attrs: Record<string, unknown>) {
+export function getBaseProps(attrs: Record<string, unknown>): HTMLAttributes {
   const hasClick = hasClickHandler(attrs);
 
   return mergeProps(attrs, {
     role: hasClick ? 'button' : undefined,
     tabindex: hasClick ? 0 : undefined
-  });
+  }) as HTMLAttributes;
 };

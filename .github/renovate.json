@@ -1,12 +1,16 @@
 {
   "timezone": "Europe/Berlin",
+  "npm": {
+    "minimumReleaseAge": "1 day"
+  },
   "packageRules": [
     {
       "matchManagers": [
         "npm"
       ],
       "matchDepTypes": [
-        "dependencies"
+        "dependencies",
+        "pnpm.catalog.runtime"
       ],
       "groupName": "npm (runtime)"
     },
@@ -15,7 +19,10 @@
         "npm"
       ],
       "matchDepTypes": [
-        "devDependencies"
+        "devDependencies",
+        "pnpm.catalog.development",
+        "engines",
+        "packageManager"
       ],
       "groupName": "npm (development)"
     },
@@ -33,7 +40,8 @@
     },
     {
       "matchManagers": [
-        "github-actions"
+        "github-actions",
+        "devcontainer"
       ],
       "separateMajorMinor": false,
       "groupName": "ci"
@@ -52,7 +60,75 @@
       ],
       "groupName": "lockfiles",
       "dependencyDashboardApproval": true
+    },
+    {
+      "matchDepNames": [
+        "pnpm"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": "pnpm"
+    },
+    {
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "enabled": false
+    },
+    {
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchPackageNames": [
+        "node"
+      ],
+      "enabled": true,
+      "versionCompatibility": "^(?<version>[^-]+)(?<compatibility>-.*)?$"
+    },
+    {
+      "matchPackageNames": [
+        "node",
+        "actions/node-versions"
+      ],
+      "versioning": "node",
+      "groupName": "node"
+    },
+    {
+      "matchPackageNames": [
+        "node",
+        "actions/node-versions"
+      ],
+      "rangeStrategy": "replace"
+    },
+    {
+      "matchPackageNames": [
+        "node"
+      ],
+      "matchDepTypes": [
+        "engines"
+      ],
+      "rangeStrategy": "widen"
     }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Bump the NodeSource major pinned in the devcontainer Dockerfile (setup_XX.x). Version-only bump: the hosted Renovate GitHub App can't run postUpgradeTasks to verify the NodeSource repo URL exists for the new major before opening the PR (that requires self-hosted Renovate with an admin-configured allowedCommands).",
+      "managerFilePatterns": [
+        ".devcontainer/Dockerfile"
+      ],
+      "matchStrings": [
+        "setup_(?<currentValue>\\d+)\\.x"
+      ],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node",
+      "versioningTemplate": "node",
+      "autoReplaceStringTemplate": "setup_{{{newValue}}}.x"
+    }
+  ],
+  "postUpdateOptions": [
+    "pnpmDedupe"
   ],
   "dependencyDashboard": true,
   "prConcurrentLimit": 0,
@@ -64,17 +140,20 @@
     "labels": [
       "security",
       "dependencies"
-    ]
+    ],
+    "separateMajorMinor": false,
+    "vulnerabilityFixStrategy": "highest"
   },
   "ignoreDeps": [
-    "npm",
-    "node",
     "vuetify"
   ],
   "enabledManagers": [
     "npm",
     "github-actions",
-    "cargo"
+    "cargo",
+    "devcontainer",
+    "dockerfile",
+    "custom.regex"
   ],
   "labels": [
     "dependencies"
@@ -97,7 +176,8 @@
     "ThibaultNocchi"
   ],
   "extends": [
-    "mergeConfidence:age-confidence-badges"
+    "mergeConfidence:age-confidence-badges",
+    "helpers:pinGitHubActionDigests"
   ],
   "enabled": false
 }

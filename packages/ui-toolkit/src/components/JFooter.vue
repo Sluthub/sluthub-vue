@@ -15,9 +15,9 @@
 import { useResizeObserver } from '@vueuse/core';
 import { computed, shallowRef, useTemplateRef } from 'vue';
 import { useLayout } from 'vuetify';
-import { getBaseProps } from '#/util/props';
-import { useLayoutStyle } from '#/composables/use-layout-style';
-import { toPx } from '#/util/helpers';
+import { getBaseProps } from '#/util/props.ts';
+import { useLayoutStyle } from '#/composables/use-layout-style.ts';
+import { toPx } from '#/util/helpers.ts';
 
 const el = useTemplateRef('footerRef');
 const height = shallowRef('0');
@@ -27,7 +27,7 @@ useResizeObserver(el, (entries) => {
     const entry = entries[0];
 
     height.value = toPx(entry!.contentRect.height);
-  });
+  }, 0);
 });
 
 useLayoutStyle(() => ({ 'padding-bottom': height.value }));

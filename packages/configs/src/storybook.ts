@@ -19,15 +19,11 @@ export default {
       }
     }
   },
-  // TODO: Needed because vue-docgen-plugin doesn't recognize functional components
-  viteFinal(config) {
-    // @ts-expect-error - Incorrect type in Vite config, but this is a temporal workaround regardless
-    const vueDocgenIndex = config.plugins?.findIndex(({ name }) => name === 'storybook:vue-docgen-plugin');
+  // vue-component-meta handles functional components; exclude the obsolete docgen transformer.
+  async viteFinal(config) {
+    const plugins = await Promise.all((config.plugins ?? []).map(plugin => Promise.resolve(plugin)));
 
-    if (vueDocgenIndex) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      config.plugins?.splice(vueDocgenIndex, 1);
-    }
+    config.plugins = plugins.filter(plugin => !plugin || Array.isArray(plugin) || plugin.name !== 'storybook:vue-docgen-plugin');
 
     return config;
   }

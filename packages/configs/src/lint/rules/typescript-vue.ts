@@ -1,9 +1,11 @@
 import { defineConfig } from 'eslint/config';
+import type { Linter } from 'eslint';
 import tseslint from 'typescript-eslint';
 import sonarjs from 'eslint-plugin-sonarjs';
 import regexp from 'eslint-plugin-regexp';
 import jsdoc from 'eslint-plugin-jsdoc';
 import eslintImportX from 'eslint-plugin-import-x';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import vueScopedCSS from 'eslint-plugin-vue-scoped-css';
 import css from 'eslint-plugin-css';
 import vue from 'eslint-plugin-vue';
@@ -11,10 +13,20 @@ import vue from 'eslint-plugin-vue';
 import promise from 'eslint-plugin-promise';
 import globals from 'globals';
 import vueParser from 'vue-eslint-parser';
-import { getPackagePath } from '@jellyfin-vue/shared/node/utils';
-import { eqeqeqConfig, vueAndTsFiles, vueFiles, tsFiles } from '../shared';
+import { eqeqeqConfig, vueAndTsFiles, vueFiles, tsFiles } from '../shared.ts';
+import { getAllPackagePaths } from '@jellyfin-vue/configs/utils';
+
+const sonarRecommended: unknown = sonarjs.configs?.recommended;
+
+if (!sonarRecommended || typeof sonarRecommended !== 'object') {
+  throw new Error('The SonarJS recommended lint configuration is required');
+}
 
 const recommendedKey = 'flat/recommended';
+// SonarJS's declarations describe an array even when the installed runtime exports a config object.
+const sonarConfigs = Array.isArray(sonarRecommended)
+  ? sonarRecommended as Linter.Config[]
+  : [sonarRecommended as Linter.Config];
 
 /**
  * Util functions
@@ -22,7 +34,7 @@ const recommendedKey = 'flat/recommended';
 const flatArrayOfObjects = (obj: unknown[]) => Object.assign({}, ...obj);
 
 /** Common TypeScript and Vue rules */
-const common = (packageName: string) => defineConfig([
+const common = () => defineConfig([
   {
     ...flatArrayOfObjects(tseslint.configs.strictTypeChecked),
     name: '(@jellyfin-vue/configs/lint/typescript-vue - typescript-eslint) Extended config from plugin (strict type checking)'
@@ -55,15 +67,21 @@ const common = (packageName: string) => defineConfig([
     plugins: {
       'import-x': eslintImportX
     },
+    settings: {
+      'import-x/resolver-next': [
+        createTypeScriptImportResolver()
+      ]
+    },
     rules: {
       'import-x/no-extraneous-dependencies': [
         'error',
         {
-          packageDir: [getPackagePath('jellyfin-vue'), getPackagePath(packageName)]
+          packageDir: [...getAllPackagePaths()]
         }
       ],
       'import-x/order': 'error',
       'import-x/no-cycle': 'error',
+      'import-x/extensions': ['error', 'ignorePackages', { fix: false, checkTypeImports: true }],
       'import-x/no-nodejs-modules': 'error',
       'import-x/no-duplicates': ['error', { 'prefer-inline': true, 'considerQueryString': true }],
       // From the recommended preset
@@ -85,9 +103,8 @@ const common = (packageName: string) => defineConfig([
     }
   },
   /**
-   * TODO: Re-enable this at some point when the type checking is improved.
-   * These rules are annoying when using not well-supported TypeScript libraries
-   * and imported SFC files are not recognised properly and needs the use of:
+   * These rules remain disabled until imported SFC and library type support is reliable.
+   * Re-enabling them requires the additional parser described here:
    * https://github.com/ota-meshi/typescript-eslint-parser-for-extra-files
    */
   {
@@ -131,10 +148,10 @@ const common = (packageName: string) => defineConfig([
       'vue/return-in-computed-property': 'off'
     }
   },
-  {
-    ...sonarjs.configs.recommended,
+  ...sonarConfigs.map(config => ({
+    ...config,
     name: '(@jellyfin-vue/configs/lint/typescript-vue - sonarcloud) Extended config from plugin'
-  },
+  })),
   {
     name: '(@jellyfin-vue/configs/lint/typescript-vue - sonarcloud) Custom config',
     rules: {
@@ -152,7 +169,7 @@ const vue_config = defineConfig([
     delete config.languageOptions?.globals;
     /**
      * DEPRECATED: See https://eslint.vuejs.org/rules/component-tags-order.html#vue-component-tags-order
-     * TODO: Remove when it's removed from the recommended rules
+     * Strip the obsolete rule so our block-order rule owns component ordering.
      */
     delete config.rules?.['vue/component-tags-order'];
     config.name = `(@jellyfin-vue/configs/lint/typescript-vue - ${config.name}) - Extended config from plugin`;
@@ -181,7 +198,7 @@ const vue_config = defineConfig([
         }
       ],
       'vue/define-macros-order': ['error', {
-        order: ['defineOptions', 'defineProps', 'defineEmits', 'defineSlots']
+        order: ['definePage', 'defineOptions', 'defineProps', 'defineEmits', 'defineSlots']
       }],
       'vue/html-closing-bracket-newline': ['error', { multiline: 'never' }],
       'vue/block-order': ['error', {
@@ -208,10 +225,10 @@ const vue_config = defineConfig([
  * @param enableVue - Whether to apply the base config for Vue files
  * @returns
  */
-export function getTSVueConfig(packageName: string, enableVue = true, tsconfigRootDir = import.meta.dirname) {
+export function getTSVueConfig(enableVue = true, tsconfigRootDir = import.meta.dirname) {
   const result = [
     ...(enableVue ? vue_config : []),
-    ...common(packageName).map(conf => ({
+    ...common().map(conf => ({
       ...conf, files: enableVue ? vueAndTsFiles : tsFiles
     }))];
 
@@ -252,11 +269,9 @@ export function getTSVueConfig(packageName: string, enableVue = true, tsconfigRo
       ...langOptions,
       parserOptions: {
         ...sharedParserOptions,
-        ...(enableVue
-          ? {
-              extraFileExtensions: ['.vue']
-            }
-          : {})
+        ...(enableVue && {
+          extraFileExtensions: ['.vue']
+        })
       }
     }
   };

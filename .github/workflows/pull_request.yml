@@ -8,9 +8,6 @@ on:
   pull_request_target:
   merge_group:
 
-permissions:
-  pull-requests: read
-
 jobs:
   push-comment:
     name: Create comments ✍️
@@ -26,15 +23,17 @@ jobs:
     name: Automation 🎛️
     if: ${{ always() && !cancelled() && github.repository == 'jellyfin/jellyfin-vue' }}
     uses: ./.github/workflows/__automation.yml
-    secrets: inherit
+    permissions:
+      contents: read
+      pull-requests: write
 
   semantic-commits:
     if: ${{ always() && !cancelled() && github.repository == 'jellyfin/jellyfin-vue' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     name: Semantic Pull Request 📚
     steps:
       - name: Validate PR title 👌
-        uses: amannn/action-semantic-pull-request@v6.1.1
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
         with:
@@ -47,11 +46,11 @@ jobs:
   label:
     name: Labeling 🏷️
     if: ${{ always() && !cancelled() && github.repository == 'jellyfin/jellyfin-vue'}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
       - name: Label depending on modified files
-        uses: actions/labeler@v6.0.1
+        uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
         with:
           sync-labels: true
           repo-token: ${{ secrets.JF_BOT_TOKEN }}
@@ -64,6 +63,9 @@ jobs:
     permissions:
       id-token: write
       attestations: write
+      artifact-metadata: write
+      contents: read
+      packages: write
     with:
       commit: ${{ github.event.pull_request.head.sha }}
 
@@ -71,8 +73,8 @@ jobs:
     name: Quality checks 👌🧪
     if: ${{ always() && !cancelled() }}
     uses: ./.github/workflows/__quality_checks.yml
-    permissions:
-      contents: read
+    permissions: {}
+    secrets: {}
     with:
       commit: ${{ github.event.pull_request.head.sha }}
 
@@ -81,9 +83,9 @@ jobs:
     if: ${{ always() && !cancelled() }}
     uses: ./.github/workflows/__codeql.yml
     permissions:
-      actions: read
       contents: read
       security-events: write
+    secrets: {}
     with:
       commit: ${{ github.event.pull_request.head.sha }}
 

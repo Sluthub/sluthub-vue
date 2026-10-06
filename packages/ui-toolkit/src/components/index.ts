@@ -1,6 +1,8 @@
 export { default as JVirtual } from './JVirtual/JVirtual.vue';
 
 export { default as JApp } from './JApp.vue';
+export { default as JFileUpload } from './JFileUpload.vue';
+export type { JFileUploadExpose } from './JFileUpload.vue';
 export { default as JFooter } from './JFooter.vue';
 export { default as JHover } from './JHover.vue';
 export { default as JOverlay } from './JOverlay.vue';
@@ -14,3 +16,5 @@ export { default as JSafeHtml } from './JSafeHtml.vue';
 export { default as JTooltip } from './JTooltip.vue';
 export { default as JTransition } from './JTransition.vue';
 export type { JTransitionProps } from './JTransition.vue';
+
+export type * from '../types.d.ts';

@@ -1,0 +1,184 @@
+<template>
+  <h2 class="text-h6">
+    <span>{{ $t('images') }}</span>
+    <VBtn
+      icon
+      @click="emit('add-image')">
+      <JIcon class="i-mdi:plus-circle" />
+    </VBtn>
+  </h2>
+  <VRow>
+    <VCol
+      v-for="(item, i) in generalImages"
+      :key="`${item.ImageTag}-${i}`"
+      xl="1"
+      lg="3"
+      md="4"
+      sm="6"
+      cols="12">
+      <VCard
+        class="ma-2"
+        variant="outlined">
+        <JImg
+          :alt="$t('imageSearchResult')"
+          :src="imagePath(item)" />
+        <div class="text-center text-subtitle-1">
+          {{ item.ImageType }}
+        </div>
+        <div
+          v-if="item.Width && item.Height"
+          class="text-center text--secondary text-body-2">
+          {{ t('dimensions', { width: item.Width, height: item.Height }) }}
+        </div>
+        <VCardActions class="justify-center">
+          <VBtn
+            icon
+            @click="onSearch">
+            <JIcon class="i-mdi:magnify" />
+          </VBtn>
+          <VBtn
+            icon
+            class="ml-3"
+            @click="onDelete(item)">
+            <JIcon class="i-mdi:delete" />
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VCol>
+  </VRow>
+  <template v-if="backdropImages.length">
+    <h2
+      class="text-h6">
+      {{ $t('backdrop') }}
+    </h2>
+    <VRow>
+      <VCol
+        v-for="(item, i) in backdropImages"
+        :key="`${item.ImageTag}-${i}`"
+        xl="1"
+        lg="3"
+        md="4"
+        sm="6"
+        cols="12">
+        <VCard
+          class="ma-2"
+          variant="outlined">
+          <JImg
+            :alt="$t('imageSearchResult')"
+            :src="imagePath(item)" />
+          <div class="text-center text-subtitle-1">
+            {{ item.ImageType }}
+          </div>
+          <div class="text-center text-body-2 text--secondary">
+            {{ t('dimensions', { width: item.Width, height: item.Height }) }}
+          </div>
+          <VCardActions class="justify-center">
+            <VBtn
+              icon
+              @click="onSearch">
+              <JIcon class="i-mdi:magnify" />
+            </VBtn>
+            <VBtn
+              icon
+              class="ml-3"
+              @click="onDelete(item)">
+              <JIcon class="i-mdi:delete" />
+            </VBtn>
+          </VCardActions>
+        </VCard>
+      </VCol>
+    </VRow>
+  </template>
+  <ImageSearch
+    v-model:dialog="dialog"
+    :metadata="metadata"
+    @download-success="getItemImageInfos" />
+</template>
+
+<script setup lang="ts">
+import {
+  type BaseItemDto,
+  type ImageInfo,
+  ImageType
+} from '@jellyfin/sdk/lib/generated-client';
+import { getImageApi } from '@jellyfin/sdk/lib/utils/api/image-api';
+import { computed, ref } from 'vue';
+import { useTranslation } from 'i18next-vue';
+import { watchImmediate } from '@vueuse/core';
+import { remote } from '#/plugins/remote/index.ts';
+
+const { metadata } = defineProps<{ metadata: BaseItemDto }>();
+
+const emit = defineEmits<{
+  'add-image': [];
+}>();
+
+const images = ref<ImageInfo[]>([]);
+const dialog = ref(false);
+const { t } = useTranslation();
+
+const generalImages = computed<ImageInfo[]>(() =>
+  images.value.filter(
+    image =>
+      image.ImageType !== ImageType.Screenshot
+      && image.ImageType !== ImageType.Backdrop
+      && image.ImageType !== ImageType.Chapter
+  )
+);
+
+const backdropImages = computed<ImageInfo[]>(() =>
+  images.value.filter(image => image.ImageType === ImageType.Backdrop)
+);
+
+/**
+ * Fetches image information for the item
+ */
+async function getItemImageInfos(): Promise<void> {
+  if (!metadata.Id) {
+    return;
+  }
+
+  images.value = (
+    await remote.sdk.newUserApi(getImageApi).getItemImageInfos({
+      itemId: metadata.Id
+    })
+  ).data;
+}
+
+/**
+ * Get an image url
+ */
+function imagePath(imageInfo: ImageInfo): string | undefined {
+  if (!metadata.Id) {
+    return undefined;
+  }
+
+  return remote.sdk.newUserApi(getImageApi).getItemImageUrlById(metadata.Id, imageInfo.ImageType);
+}
+
+/**
+ * Handles the search action
+ */
+function onSearch(): void {
+  dialog.value = true;
+}
+
+/**
+ * Removes an image from an item
+ */
+async function onDelete(item: ImageInfo): Promise<void> {
+  if (!metadata.Id || !item.ImageType) {
+    return;
+  }
+
+  await remote.sdk.newUserApi(getImageApi).deleteItemImage({
+    itemId: metadata.Id,
+    imageType: item.ImageType,
+    imageIndex: item.ImageIndex ?? undefined
+  });
+
+  await getItemImageInfos();
+}
+
+watchImmediate(() => metadata, getItemImageInfos);
+</script>

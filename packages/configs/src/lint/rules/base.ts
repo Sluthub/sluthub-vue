@@ -10,7 +10,7 @@ import stylistic from '@stylistic/eslint-plugin';
 import { configs as dependConfigs } from 'eslint-plugin-depend';
 import gitignore from 'eslint-config-flat-gitignore';
 import fileProgress from 'eslint-plugin-file-progress';
-import { eqeqeqConfig, ignoresForOtherLangs } from '../shared';
+import { eqeqeqConfig, ignoresForOtherLangs } from '../shared.ts';
 
 const CI_environment = !!process.env.CI;
 
@@ -43,12 +43,13 @@ export function getBaseConfig(packageName: string, forceCache = !CI_environment,
       console.log(`[@jellyfin-vue/configs/lint] (${packageName}) Force enabling caching for this run`);
     }
 
-    if (warningAsErrors && !newArgs.some(arg => arg.includes('--max-warnings'))) {
+    if (warningAsErrors && newArgs.every(arg => !arg.includes('--max-warnings'))) {
       newArgs.push('--max-warnings=0');
       console.log(`[@jellyfin-vue/configs/lint] (${packageName}) Force enabling warnings for this run`);
     }
 
-    const argsHaveChanged = new Set(newArgs).difference(new Set(process.argv.slice(1))).size > 0;
+    const previousArgs = new Set(process.argv.slice(1));
+    const argsHaveChanged = newArgs.some(arg => !previousArgs.has(arg));
 
     if (argsHaveChanged && process.argv[0]) {
       console.log();
@@ -93,7 +94,7 @@ export function getBaseConfig(packageName: string, forceCache = !CI_environment,
         'no-extend-native': 'error',
         'curly': ['error', 'all'],
         'prefer-arrow-callback': 'error',
-        'multiline-comment-style': 'error',
+        '@stylistic/multiline-comment-style': 'error',
         'unicode-bom': ['error', 'never'],
         'eqeqeq': eqeqeqConfig,
         '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
@@ -108,6 +109,10 @@ export function getBaseConfig(packageName: string, forceCache = !CI_environment,
          * See https://github.com/jellyfin/jellyfin-vue/pull/2361
          */
         'unicorn/explicit-length-check': 'off',
+        'unicorn/comment-content': 'off',
+        'unicorn/no-top-level-side-effects': 'off',
+        'unicorn/name-replacements': 'off',
+        'unicorn/consistent-boolean-name': 'off',
         '@stylistic/padding-line-between-statements': [
           'error',
           // Always require blank lines after import, except between imports
@@ -172,7 +177,7 @@ export function getBaseConfig(packageName: string, forceCache = !CI_environment,
         {
           ...json.configs.recommended,
           files,
-          ignores: [...ignoresForOtherLangs, 'package-lock.json', ...files.map(file => `!${file}`)],
+          ignores: [...ignoresForOtherLangs, 'pnpm-lock.yaml', ...files.map(file => `!${file}`)],
           language: `json/${lang}`,
           name: `(@jellyfin-vue/configs/lint/base - ${lang}) Extended config from plugin`
         }];

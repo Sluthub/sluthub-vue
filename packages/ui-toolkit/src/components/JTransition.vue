@@ -23,7 +23,7 @@
       $attrs.onLeaveCancelled?.(...args);
     }">
     <!-- Transition only supports a single child, so we handle a possible misuse here wrapping if necessary -->
-    <span v-if="$slots.default?.({})?.length > 1 && !group">
+    <span v-if="($slots.default?.({})?.length ?? 0) > 1 && !group">
       <slot />
     </span>
     <slot v-else />
@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { Transition, TransitionGroup, type TransitionProps, shallowRef, computed, type DefineComponent } from 'vue';
-import { prefersNoMotion, isSlow } from '#/store';
+import { prefersNoMotion, isSlow } from '#/store/index.ts';
 import { usePausableEffect } from '#/composables/use-pausable-effect.ts';
 
 interface Props {

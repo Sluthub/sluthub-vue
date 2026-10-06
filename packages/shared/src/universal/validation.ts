@@ -1,4 +1,3 @@
-import type { AxiosError } from 'axios';
 import type { Class } from 'type-fest';
 import { isArray, isObject } from '@vue/shared';
 
@@ -71,8 +70,18 @@ export function isObj(value: unknown): value is object {
 /**
  * TypeScript type guard for AxiosError
  */
-export function isAxiosError(object: unknown): object is AxiosError {
-  return isObj(object) && 'isAxiosError' in object;
+export function isAxiosError(object: unknown): object is Error & { response?: { status: number } } {
+  // Keep the shared validator independent of a frontend-only transport dependency.
+  return isObj(object)
+    && 'isAxiosError' in object
+    && object.isAxiosError === true
+    && 'message' in object
+    && typeof object.message === 'string'
+    && 'name' in object
+    && typeof object.name === 'string'
+    && (!('response' in object) || object.response === undefined || (
+      isObj(object.response) && 'status' in object.response && typeof object.response.status === 'number'
+    ));
 }
 
 /**
@@ -85,7 +94,7 @@ export { isArray } from '@vue/shared';
  *
  * @type TypeScript Decorator
  */
-export function sealed(constructor: Class<unknown, unknown[]>): void {
+export function sealed<T, Args extends unknown[]>(constructor: Class<T, Args>): void {
   Object.seal(constructor);
   Object.seal(constructor.prototype);
 }

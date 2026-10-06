@@ -4,7 +4,7 @@
     defer>
     <!-- eslint-disable vue/require-component-is vue/html-indent -->
     <component
-      is="style"
+      :is="'style'"
       data-jellyfin-css-vars>
       :root {
       <template v-if="loading">
@@ -35,7 +35,7 @@
  * The text color is calculated using: https://codepen.io/devongovett/pen/QwLbRrW and https://x.com/devongovett/status/1863733091409461256
  */
 import { computed } from 'vue';
-import type { ColorPalette } from '@jellyfin-vue/shared/colors';
+import type { ColorPalette } from '@jellyfin-vue/configs/uno/colors';
 import { watchImmediate } from '@vueuse/core';
 import Color from 'color';
 

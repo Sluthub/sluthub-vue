@@ -2,10 +2,9 @@ import { basename, resolve, join } from 'node:path';
 import { globSync } from 'node:fs';
 import { lstat, rename, rm } from 'node:fs/promises';
 import type { LiteralUnion } from 'type-fest';
-import type { RollupLog } from 'rollup';
 import prettyBytes from 'pretty-bytes';
 import Sonda from 'sonda/rollup';
-import { normalizePath, preview, type Plugin } from 'vite';
+import { normalizePath, preview, type Plugin, type Rolldown } from 'vite';
 
 /**
  * TODO: Track https://github.com/vitejs/vite/pull/19005 so we can pull Vite's default config instead
@@ -18,7 +17,7 @@ const defaultConfig = { build: { outDir: 'dist' } };
  */
 export function JBundleAnalysis(): Plugin {
   let mode: LiteralUnion<'analyze:bundle' | 'analyze:cycles', string>;
-  const warnings: RollupLog[] = [];
+  const warnings: Rolldown.RolldownLog[] = [];
 
   return {
     name: 'Jellyfin_Vue:bundle_analysis',
@@ -30,7 +29,7 @@ export function JBundleAnalysis(): Plugin {
         return {
           build: {
             sourcemap: true,
-            rollupOptions: {
+            rolldownOptions: {
               plugins: [
                 Sonda({
                   open: false,
@@ -44,10 +43,15 @@ export function JBundleAnalysis(): Plugin {
             }
           }
         };
-      } else if (env.mode === 'analyze:cycles') {
+      }
+
+      if (env.mode === 'analyze:cycles') {
         return {
           build: {
-            rollupOptions: {
+            rolldownOptions: {
+              checks: {
+                circularDependency: true
+              },
               onwarn: (warning) => {
                 if (warning.code === 'CIRCULAR_DEPENDENCY') {
                   warnings.push(warning);
@@ -88,7 +92,7 @@ export function JBundleAnalysis(): Plugin {
 }
 
 /**
- * Creates the Rollup's chunking strategy of the application (for code-splitting)
+ * Creates the Rollup's chunking strategy of the app (for code-splitting)
  */
 export function JBundleChunking(): Plugin {
   return {
@@ -98,38 +102,69 @@ export function JBundleChunking(): Plugin {
       build: {
         rollupOptions: {
           output: {
+            strictExecutionOrder: true,
             /**
              * This is the first thing that should be debugged when there are issues
-             * withe the bundle. Check these issues:
-             * - https://github.com/vitejs/vite/issues/5142
-             * - https://github.com/evanw/esbuild/issues/399
-             * - https://github.com/rollup/rollup/issues/3888
+             * with the bundle.
              */
-            manualChunks(id) {
-              const match = /node_modules\/([^/]+)/.exec(id)?.[1];
+            codeSplitting: {
+              groups: [
+                {
+                  /**
+                   * Split each vendor in its own chunk
+                   */
+                  name: (id) => {
+                    const normalizedId = id.replaceAll('\\', '/');
+                    const nodeModulesPrefix = 'node_modules/';
+                    const nodeModulesIndex = normalizedId.lastIndexOf(nodeModulesPrefix);
 
-              /**
-               * Split each vendor in its own chunk
-               */
-              if (match) {
-                return `vendor/${match.replace('@', '')}`;
-              }
+                    if (nodeModulesIndex === -1) {
+                      return;
+                    }
 
-              /**
-               * Split localization strings into separate chunks
-               */
-              if (id.includes('virtual:')) {
-                if (id.includes('locales/vuetify')) {
-                  return 'localization/vendor/vuetify';
-                } else if (id.includes('locales/date-fns')) {
-                  return 'localization/vendor/date-fns';
-                } else if (id.includes('i18next/resources')) {
-                  const targetPath = basename(id.split('/').at(-1)!);
-                  const isIndex = targetPath === 'resources';
+                    const packageName = normalizedId.slice(nodeModulesIndex + nodeModulesPrefix.length).split('/', 1)[0];
 
-                  return isIndex ? 'localization' : `localization/strings/${targetPath}`;
+                    if (!packageName) {
+                      return;
+                    }
+
+                    return `vendor/${packageName.replace('@', '')}`;
+                  },
+                  priority: 10
+                },
+                {
+                  /**
+                   * Split Vuetify localization into separate chunk
+                   */
+                  name: 'localization/vendor/vuetify',
+                  test: /virtual:.*locales[\\/]vuetify/,
+                  priority: 9
+                },
+                {
+                  /**
+                   * Split Date-fns localization into separate chunk
+                   */
+                  name: 'localization/vendor/date-fns',
+                  test: /virtual:.*locales[\\/]date-fns/,
+                  priority: 9
+                },
+                {
+                  /**
+                   * Split i18next resources into separate chunks
+                   */
+                  name: (id) => {
+                    if (!(id.includes('virtual:') || id.includes('i18next/resources'))) {
+                      return;
+                    }
+
+                    const targetPath = basename(id.split('/').at(-1)!);
+                    const isIndex = targetPath === 'resources';
+
+                    return isIndex ? 'localization' : `localization/strings/${targetPath}`;
+                  },
+                  priority: 8
                 }
-              }
+              ]
             }
           }
         }

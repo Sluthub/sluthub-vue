@@ -18,13 +18,23 @@ jobs:
         persist-credentials: false
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
       with:
-        node-version: '22'
-        cache: npm
+        node-version: '24'
     - name: Install locked dependencies
-      run: npm ci
+      run: corepack pnpm ci
     - name: Run actual tests
-      run: npm test
+      run: corepack pnpm test
     - name: Check types
-      run: npm run check:types
+      run: corepack pnpm check:types
     - name: Build custom frontend
-      run: npm run build --workspace frontend
+      run: corepack pnpm --filter @jellyfin-vue/frontend build
+      env:
+        COMMIT_HASH: ${{ github.sha }}
+    - name: Bind artifact to source
+      run: printf '%s\n' "$GITHUB_SHA" > packages/frontend/dist/source-commit.txt
+    - name: Save tested static frontend
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: sluthub-vue-${{ github.sha }}
+        path: packages/frontend/dist
+        if-no-files-found: error
+        retention-days: 7

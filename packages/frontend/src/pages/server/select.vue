@@ -1,0 +1,51 @@
+<template>
+  <VContainer
+    class="!uno-h-full"
+    fluid>
+    <VRow justify="center">
+      <VCol
+        sm="6"
+        md="6"
+        lg="5">
+        <h1 class="text-h4 uno-mb-6 uno-text-center">
+          {{ $t('selectServer') }}
+        </h1>
+        <div>
+          <ServerCard
+            v-for="server in $remote.auth.servers.value"
+            :key="server.Id || useId()"
+            class="uno-mt-2"
+            :server-info="server" />
+        </div>
+        <VBtn
+          class="uno-mt-6"
+          block
+          size="large"
+          color="primary"
+          variant="elevated"
+          @click="$router.push('/server/add')">
+          {{ $t('addServer') }}
+        </VBtn>
+      </VCol>
+    </VRow>
+  </VContainer>
+</template>
+
+<script setup lang="ts">
+import { useId } from 'vue';
+import { useTranslation } from 'i18next-vue';
+import { usePageTitle } from '#/composables/page-title.ts';
+
+definePage({
+  meta: {
+    layout: {
+      name: 'server',
+      transition: {}
+    }
+  }
+});
+
+const { t } = useTranslation();
+
+usePageTitle(() => t('selectServer'));
+</script>
