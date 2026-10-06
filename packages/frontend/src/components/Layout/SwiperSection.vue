@@ -36,7 +36,8 @@
         :slides-per-view="slides"
         :slides-per-group="slides"
         :breakpoints="breakpoints"
-        a11y>
+        a11y
+        @swiper="swiper => swiperInstance = swiper">
         <SwiperSlide
           v-for="item in items"
           :key="item.Id"
@@ -61,7 +62,8 @@ import 'swiper/css/free-mode';
 import 'swiper/css/virtual';
 import { A11y, FreeMode, Navigation, Virtual } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { computed, useId } from 'vue';
+import type SwiperType from 'swiper';
+import { computed, onMounted, shallowRef, useId } from 'vue';
 import { useDisplay, useTheme } from 'vuetify';
 import { CardShapes } from '#/utils/items.ts';
 
@@ -75,6 +77,13 @@ const { title, items, shape } = defineProps<{
 const uuid = useId();
 const display = useDisplay();
 const theme = useTheme();
+const swiperInstance = shallowRef<SwiperType>();
+
+onMounted(() => {
+  // Outer navigation buttons are attached after Swiper initializes its own element.
+  swiperInstance.value?.navigation.init();
+  swiperInstance.value?.navigation.update();
+});
 
 /**
  * Swiper options

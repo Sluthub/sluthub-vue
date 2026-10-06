@@ -1,6 +1,11 @@
 * {
   font-family: var(--j-font-family), sans-serif, system-ui !important;
   backface-visibility: hidden;
+}
+
+/* Keep page-edge overscroll disabled without trapping scroll in nested carousels. */
+html,
+body {
   overscroll-behavior: none;
 }
 
