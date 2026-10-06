@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm gen-icon && tauri build",
-    "gen-icon": "tauri icon ../../packages/frontend/public/icon.svg",
+    "gen-icon": "tauri icon ../../packages/frontend/public/icon.svg --fit contain",
     "reset": "git clean -fxd",
     "start": "pnpm gen-icon && tauri dev"
   },
