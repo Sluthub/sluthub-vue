@@ -46,9 +46,10 @@
     </VAppBar>
     <VContainer>
       <ItemGrid
+        v-if="items.length || !batchState.error"
         :items="items">
         <h1 class="text-h5">
-          {{ hasFilters ? t('libraryEmptyFilters') : t('libraryEmpty') }}
+          {{ loading ? t('loading') : hasFilters ? t('libraryEmptyFilters') : t('libraryEmpty') }}
         </h1>
       </ItemGrid>
       <div

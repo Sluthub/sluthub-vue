@@ -143,6 +143,7 @@ const workerUpdates = shallowRef(0);
 const workerInstance = new JVirtualWorker();
 const worker = wrap<IJVirtualWorker>(workerInstance);
 const cache = new Map<number, InternalItem[]>();
+let cacheGeneration = 0;
 
 /**
  * == MEASUREMENTS OF THE GRID AREA AND STYLING ==
@@ -247,6 +248,7 @@ const populateCache = (() => {
    * Only to be used inside populateCache, since nullish checks are skipped here
    */
   async function setCache(offset: number): Promise<void> {
+    const generation = cacheGeneration;
   /**
    * Set the cache value rightaway to an empty value.
    * That way, populateCache loop doesn't fire again
@@ -265,7 +267,7 @@ const populateCache = (() => {
      * old data might be pushed instead, so we avoid it here.
      */
     globalThis.requestAnimationFrame(() => {
-      if (cache.size === 0) {
+      if (generation !== cacheGeneration || !cache.has(offset)) {
         return;
       }
 
@@ -278,8 +280,8 @@ const populateCache = (() => {
    * Handles all the logic for caching the virtual scrolling items and
    * the interaction with the worker.
    *
-   * We cache the items to avoid the extra overhead of sending the items
-   * to the worker when scrolling fast. We cache 2 times the buffer length
+   * Cache the current window, adjacent rows and the top window. Prefilling every
+   * integer offset created hundreds of redundant worker requests on each append/resize.
    */
   return function (): void {
     if (!(!isUndef(resizeMeasurement.value)
@@ -288,23 +290,24 @@ const populateCache = (() => {
       return;
     }
 
-    const area = bufferLength.value * 2;
-    const start = Math.max(1, bufferOffset.value - area);
-    const finish = bufferOffset.value + area;
+    const measurement = resizeMeasurement.value!;
+    const step = measurement.flow === 'column' ? measurement.rows : measurement.columns;
+    const offsets = new Set([
+      bufferOffset.value,
+      Math.max(0, bufferOffset.value - step),
+      bufferOffset.value + step,
+      0
+    ]);
+    for (const offset of cache.keys()) {
+      if (!offsets.has(offset)) cache.delete(offset);
+    }
 
     /**
      * We always populate 0 first, so there's no blank space shown at the beginning
      * or when scrolling to top after a resize in the bottom area.
      */
-    if (!cache.has(0)) {
-      void setCache(0);
-    }
-
-    for (let i = finish; i >= start && !cache.has(i); i--) {
-    /**
-     * Fire all the operations concurrently, no need to await them
-     */
-      void setCache(i);
+    for (const offset of offsets) {
+      if (!cache.has(offset)) void setCache(offset);
     }
   };
 })();
@@ -339,6 +342,7 @@ watch(() => scrollTo, () => {
  */
 watch([bufferLength, resizeMeasurement, itemsLength, bufferOffset], (val, oldVal) => {
   if (val[0] !== oldVal[0] || val[1] !== oldVal[1] || val[2] !== oldVal[2]) {
+    cacheGeneration++;
     cache.clear();
   }
 
@@ -346,6 +350,7 @@ watch([bufferLength, resizeMeasurement, itemsLength, bufferOffset], (val, oldVal
 });
 
 onScopeDispose(() => {
+  cacheGeneration++;
   worker[releaseProxy]();
   workerInstance.terminate();
 });
