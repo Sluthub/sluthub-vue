@@ -29,6 +29,7 @@ describe('endless library batches', () => {
     await f.loader.next();
     expect(calls.map(({ startIndex, limit }) => [startIndex, limit])).toEqual([[0, 50]]);
     expect(f.state().items).toHaveLength(50);
+    expect(f.state().total).toBe(10_000);
     await f.loader.next();
     expect(f.state().items).toHaveLength(100);
     expect(calls[1]?.startIndex).toBe(50);
@@ -52,12 +53,94 @@ describe('endless library batches', () => {
 
     const fresh = f.loader.next();
 
-    requests[0]!.resolve({ items: [{ id: 'stale' }] });
+    requests[0]!.resolve({ items: [{ id: 'stale' }], total: 100_000 });
     await old;
     expect(f.state().loading).toBe(true);
-    requests[1]!.resolve({ items: [{ id: 'fresh' }] });
+    expect(f.state().total).toBeUndefined();
+    requests[1]!.resolve({ items: [{ id: 'fresh' }], total: 1 });
     await fresh;
     expect(f.state().items).toEqual([{ id: 'fresh' }]);
+    expect(f.state().total).toBe(1);
+  });
+
+  test('retains the query total during uncounted batches and stops at that total', async () => {
+    const offsets: number[] = [];
+    const f = fixture(({ startIndex }) => {
+      offsets.push(startIndex);
+
+      return Promise.resolve({ items: batch(startIndex, 50), total: startIndex === 0 ? 100 : undefined });
+    });
+
+    expect(f.state().total).toBeUndefined();
+    await f.loader.next();
+    expect(f.state().total).toBe(100);
+    expect(f.state().hasMore).toBe(true);
+    await f.loader.next();
+    expect(f.state().total).toBe(100);
+    expect(f.state().items).toHaveLength(100);
+    expect(f.state().hasMore).toBe(false);
+    await f.loader.next();
+    expect(offsets).toEqual([0, 50]);
+  });
+
+  test('clears the previous query count on filter reset and restores it from the right cache', async () => {
+    let total = 120;
+    let calls = 0;
+    const f = fixture(() => {
+      calls++;
+
+      return Promise.resolve({ items: batch(0, 50), total });
+    });
+
+    await f.loader.next();
+    expect(f.state().total).toBe(120);
+    f.loader.reset('server-a/user-a', 'filtered');
+    expect(f.state().total).toBeUndefined();
+    expect(f.state().items).toEqual([]);
+    total = 60;
+    await f.loader.next();
+    expect(f.state().total).toBe(60);
+    f.loader.reset('server-a/user-a', 'release-desc');
+    await f.loader.next();
+    expect(f.state().total).toBe(120);
+    expect(f.state().items).toHaveLength(50);
+    expect(calls).toBe(2);
+  });
+
+  test('keeps the total and loaded cards while a later batch is pending or fails', async () => {
+    const { promise, reject } = Promise.withResolvers<BatchResult<Item>>();
+    const f = fixture(({ startIndex }) => startIndex === 0
+      ? Promise.resolve({ items: batch(0, 50), total: 300 })
+      : promise);
+
+    await f.loader.next();
+
+    const pending = f.loader.next();
+
+    expect(f.state().loading).toBe(true);
+    expect(f.state().total).toBe(300);
+    expect(f.state().items).toHaveLength(50);
+    reject(new Error('offline'));
+    await pending;
+    expect(f.state().error).toBe(true);
+    expect(f.state().total).toBe(300);
+    expect(f.state().items).toHaveLength(50);
+  });
+
+  test('reports an empty query and discovers counts for endpoints without a total', async () => {
+    const empty = fixture(() => Promise.resolve({ items: [], total: 0 }));
+
+    await empty.loader.next();
+    expect(empty.state().total).toBe(0);
+    expect(empty.state().hasMore).toBe(false);
+
+    const unknown = fixture(({ startIndex }) => Promise.resolve({ items: batch(startIndex, startIndex === 0 ? 50 : 3) }));
+
+    await unknown.loader.next();
+    expect(unknown.state().total).toBeUndefined();
+    await unknown.loader.next();
+    expect(unknown.state().total).toBe(53);
+    expect(unknown.state().items).toHaveLength(53);
   });
 
   test('deduplicates cards but advances by server response length', async () => {

@@ -49,6 +49,7 @@ export interface BatchResult<T> {
 }
 export interface BatchState<T> {
   items: T[];
+  total?: number;
   loading: boolean;
   hasMore: boolean;
   error: boolean;
@@ -143,8 +144,18 @@ export class BatchLoader<T> {
 
       this.offset += result.items.length;
       this.state.items = [...this.state.items, ...additions];
+
+      if (result.total !== undefined) {
+        this.state.total = result.total;
+      }
+
       this.state.hasMore = result.items.length >= this.limit
-        && (result.total === undefined || this.offset < result.total);
+        && (this.state.total === undefined || this.offset < this.state.total);
+
+      // Endpoints without a count still reveal their total when the final batch arrives.
+      if (!this.state.hasMore && this.state.total === undefined) {
+        this.state.total = this.offset;
+      }
     } catch {
       if (generation !== this.generation || controller.signal.aborted) {
         return;

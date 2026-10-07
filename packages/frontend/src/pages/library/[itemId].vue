@@ -9,15 +9,15 @@
       <VChip
         size="small"
         class="uno-m-2 uno-hidden uno-min-[960px]:flex">
-        <template v-if="loading && items.length">
-          {{ t('lazyLoading', { value: items.length }) }}
+        <template v-if="batchState.total !== undefined">
+          {{ batchState.total.toLocaleString(i18next.language) }} ({{ items.length.toLocaleString(i18next.language) }})
         </template>
         <JProgressCircular
           v-else-if="loading"
           indeterminate
           class="uno-h-full" />
         <template v-else>
-          {{ items.length ?? 0 }}
+          — ({{ items.length.toLocaleString(i18next.language) }})
         </template>
       </VChip>
       <VDivider
@@ -106,7 +106,7 @@ import { remote } from '#/plugins/remote/index.ts';
 import { lastUpdatedIds } from '#/store/dbs/api/index.ts';
 import { windowScroll } from '#/store/index.ts';
 
-const { t } = useTranslation();
+const { t, i18next } = useTranslation();
 const route = useRoute('/library/[itemId]');
 
 const COLLECTION_TYPES_MAPPINGS: Record<string, BaseItemKind> = {
@@ -231,7 +231,8 @@ const loader = new BatchLoader<BaseItemDto>(async ({ startIndex, limit, signal }
     // Card summaries must never replace complete detail/playback DTOs in the worker cache.
     fields: [ItemFields.PrimaryImageAspectRatio, ItemFields.CanDelete, ItemFields.CanDownload, ItemFields.ChildCount],
     enableImages: true, enableImageTypes: [ImageType.Primary, ImageType.Thumb], imageTypeLimit: 1,
-    enableUserData: true, enableTotalRecordCount: false
+    // Count this query once, then fetch only bounded lazy batches.
+    enableUserData: true, enableTotalRecordCount: startIndex === 0
   };
   const options = { signal };
   let data: BaseItemDtoQueryResult;
@@ -261,8 +262,8 @@ const loader = new BatchLoader<BaseItemDto>(async ({ startIndex, limit, signal }
     }
   }
 
-  // Jellyfin can return TotalRecordCount=0 when counting is disabled; only a short batch ends the list.
-  return { items: data.Items ?? [] };
+  // Later responses can contain a zero count because counting is disabled.
+  return { items: data.Items ?? [], total: startIndex === 0 ? data.TotalRecordCount : undefined };
 }, item => item.Id, (state) => {
   batchState.value = state;
 }, cache);
