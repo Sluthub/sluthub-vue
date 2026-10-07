@@ -326,8 +326,8 @@ importers:
         specifier: 5.3.0
         version: 5.3.0
       '@iconify/json':
-        specifier: 2.2.538
-        version: 2.2.538
+        specifier: 2.2.539
+        version: 2.2.539
       '@jellyfin-vue/i18n':
         specifier: workspace:*
         version: link:../i18n
@@ -999,8 +999,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==, tarball: https://registry.npmjs.org/@humanwhocodes/retry/-/retry-0.4.3.tgz}
     engines: {node: '>=18.18'}
 
-  '@iconify/json@2.2.538':
-    resolution: {integrity: sha512-7WBO1cCja8ayEPsJJ4QI44NQNgYaDPm5EqVIxLkuB2nkxmd8BDksu9+6jSnaFY80O1jMsruS7QVCUhvJ4zM1TA==, tarball: https://registry.npmjs.org/@iconify/json/-/json-2.2.538.tgz}
+  '@iconify/json@2.2.539':
+    resolution: {integrity: sha512-fcMTJ7NPvaLePQQ7Xmlwp+5bc+vJid6k4Pv4w47EPSjuq/Ty0im28RVMbdQRdVtvwqCKsfWbWNczYNMbs3sB/A==, tarball: https://registry.npmjs.org/@iconify/json/-/json-2.2.539.tgz}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==, tarball: https://registry.npmjs.org/@iconify/types/-/types-2.0.0.tgz}
@@ -4649,7 +4649,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@iconify/json@2.2.538':
+  '@iconify/json@2.2.539':
     dependencies:
       '@iconify/types': 2.0.0
       pathe: 2.0.3
