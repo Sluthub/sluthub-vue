@@ -50,7 +50,7 @@
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0",
     "unocss": "66.10.5",
-    "vite": "8.3.2",
+    "vite": "8.3.3",
     "vitest": "4.1.11",
     "vue-eslint-parser": "10.4.1",
     "vue-tsc": "3.3.12"
