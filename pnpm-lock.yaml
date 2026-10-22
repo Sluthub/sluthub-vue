@@ -275,8 +275,8 @@ importers:
         specifier: 4.2.2
         version: 4.2.2(eslint@10.12.0)
       eslint-plugin-unicorn:
-        specifier: 71.1.0
-        version: 71.1.0(eslint@10.12.0)
+        specifier: 77.0.0
+        version: 77.0.0(eslint@10.12.0)
       eslint-plugin-vue:
         specifier: 10.11.1
         version: 10.11.1(@stylistic/eslint-plugin@5.10.0)(@typescript-eslint/parser@8.71.0)(eslint@10.12.0)(vue-eslint-parser@10.4.1)
@@ -945,6 +945,10 @@ packages:
 
   '@eslint/css-tree@4.1.0':
     resolution: {integrity: sha512-cg0ohyrAG3swyGqt8t1K/OK97DqBw/ftDvlvyY1fmEst5B40UOmsimwLENq74z2dyw5CDM+3zJIW+CV2nFNDdA==, tarball: https://registry.npmjs.org/@eslint/css-tree/-/css-tree-4.1.0.tgz}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@eslint/css-tree@4.1.1':
+    resolution: {integrity: sha512-A+s89eP+yDAPkKjnIOfjlkGifg5J7GPn01nWx14UjBVWktfkxOU4975F9ZZ13xNxkGiblNcBaAqgKhnQrW6SWA==, tarball: https://registry.npmjs.org/@eslint/css-tree/-/css-tree-4.1.1.tgz}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   '@eslint/css@1.4.0':
@@ -2467,10 +2471,6 @@ packages:
   constantinople@4.0.1:
     resolution: {integrity: sha512-vCrqcSIq4//Gx74TXXCGnHpulY1dskqLTFGDmhrGxzeXL8lF8kvXv6mpNWlJj1uD4DW23D4ljAqbY4RRaaUZIw==, tarball: https://registry.npmjs.org/constantinople/-/constantinople-4.0.1.tgz}
 
-  convert-hrtime@5.0.0:
-    resolution: {integrity: sha512-lOETlkIeYSJWcbbcvjRKGxVMXJR+8+OQb/mTPbA4ObPMytYIsUbuOE0Jzy60hjARYszq1id0j8KgVhC+WGZVTg==, tarball: https://registry.npmjs.org/convert-hrtime/-/convert-hrtime-5.0.0.tgz}
-    engines: {node: '>=12'}
-
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==, tarball: https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz}
 
@@ -2600,6 +2600,10 @@ packages:
     resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==, tarball: https://registry.npmjs.org/entities/-/entities-7.0.1.tgz}
     engines: {node: '>=0.12'}
 
+  entities@8.1.0:
+    resolution: {integrity: sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==, tarball: https://registry.npmjs.org/entities/-/entities-8.1.0.tgz}
+    engines: {node: '>=20.19.0'}
+
   error-stack-parser-es@1.0.5:
     resolution: {integrity: sha512-5qucVt2XcuGMcEGgWI7i+yZpmpByQ8J1lHhcL7PwqCwu9FPP3VUXzT4ltHe5i2z9dePwEHcDVOAfSnHsOlCXRA==, tarball: https://registry.npmjs.org/error-stack-parser-es/-/error-stack-parser-es-1.0.5.tgz}
 
@@ -2724,8 +2728,8 @@ packages:
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0 || ^10.0.0
 
-  eslint-plugin-unicorn@71.1.0:
-    resolution: {integrity: sha512-dn3YmR3qLLUeYyo/os3ubZ7UHQJ1WbBAgC9cIhnLTyMj9J6kivuc2U1fCmYetLexUlTDVYtBqhjSj/VaebTe6Q==, tarball: https://registry.npmjs.org/eslint-plugin-unicorn/-/eslint-plugin-unicorn-71.1.0.tgz}
+  eslint-plugin-unicorn@77.0.0:
+    resolution: {integrity: sha512-aayznMCKTXlPAsoyUjRok862sz3BJAfxpQX/t79AT/uVQTmWsCx3FXfXo+9hfhL8aR2mMZQYyXoDZo3/ly6lJw==, tarball: https://registry.npmjs.org/eslint-plugin-unicorn/-/eslint-plugin-unicorn-77.0.0.tgz}
     engines: {node: '>=22'}
     peerDependencies:
       eslint: '>=10.4'
@@ -2897,10 +2901,6 @@ packages:
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==, tarball: https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz}
 
-  function-timeout@1.0.2:
-    resolution: {integrity: sha512-939eZS4gJ3htTHAldmyyuzlrD58P03fHG49v2JfFXbV6OhvZKRC9j2yAtdHw/zrp2zXHuv05zMIy40F0ge7spA==, tarball: https://registry.npmjs.org/function-timeout/-/function-timeout-1.0.2.tgz}
-    engines: {node: '>=18'}
-
   functional-red-black-tree@1.0.1:
     resolution: {integrity: sha512-dsKNQNdj6xA3T+QlADDA7mOSlX0qiMINjn0cgr+eGHGsbSHzTabcIogz2+p/iqP1Xs6EP/sS2SbqH+brGTbq0g==, tarball: https://registry.npmjs.org/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz}
 
@@ -3052,10 +3052,6 @@ packages:
   is-glob@4.0.3:
     resolution: {integrity: sha512-xelSayHH36ZgE7ZWhli7pW34hNbNl8Ojv5KVmkJD4hBdD3th8Tfk9vYasLM+mXWOZhFkgZfxhLSnrwRr4elSSg==, tarball: https://registry.npmjs.org/is-glob/-/is-glob-4.0.3.tgz}
     engines: {node: '>=0.10.0'}
-
-  is-identifier@1.1.0:
-    resolution: {integrity: sha512-NhOds0mDx9lJu+1lBRO0xbwFo5nobA7GCk/0e5xjr6+6XugX985+0OyGX35BNrTkPAsdLcIKg02HUQJOK8D8kw==, tarball: https://registry.npmjs.org/is-identifier/-/is-identifier-1.1.0.tgz}
-    engines: {node: '>=18'}
 
   is-in-ssh@1.0.0:
     resolution: {integrity: sha512-jYa6Q9rH90kR1vKB6NM7qqd1mge3Fx4Dhw5TVlK1MUBqhEOuCagrEHMevNuCcbECmXZ0ThXkRm+Ymr51HwEPAw==, tarball: https://registry.npmjs.org/is-in-ssh/-/is-in-ssh-1.0.0.tgz}
@@ -3261,10 +3257,6 @@ packages:
   magic-string@1.4.1:
     resolution: {integrity: sha512-8lyCu36ErXR0J9uaGKlKQoiLZKmtI63YGLE8G2o9jyRPdr4X47LusSOwgOJOzcVtp81fTAAjxR7BwKz682Jhow==, tarball: https://registry.npmjs.org/magic-string/-/magic-string-1.4.1.tgz}
 
-  make-asynchronous@1.1.0:
-    resolution: {integrity: sha512-ayF7iT+44LXdxJLTrTd3TLQpFDDvPCBxXxbv+pMUSuHA5Q8zyAfwkRP6aHHwNVFBUFWtxAHqwNJxF8vMZLAbVg==, tarball: https://registry.npmjs.org/make-asynchronous/-/make-asynchronous-1.1.0.tgz}
-    engines: {node: '>=18'}
-
   marked@18.0.14:
     resolution: {integrity: sha512-mBHK6FBHuBAlhgRe88w9F0O1AbwwXJUcQibUbC/QcdTbVGAD7aWza+xt3N6oT/jCZx3/OMeS+8rnuiHZcQ9s7A==, tarball: https://registry.npmjs.org/marked/-/marked-18.0.14.tgz}
     engines: {node: '>= 20'}
@@ -3279,6 +3271,9 @@ packages:
 
   mdn-data@2.34.0:
     resolution: {integrity: sha512-OgIlLv0NxJKVW4GTSAoEgpRGd4F2XCqGinK0MsMlBCCS/Zcm2/LsbercNWNA7PeMMcjl75NnI97eqyo7zkdxWA==, tarball: https://registry.npmjs.org/mdn-data/-/mdn-data-2.34.0.tgz}
+
+  mdn-data@2.35.0:
+    resolution: {integrity: sha512-k+1+dEIm2z/BEfdvYzT/fIyAGeDBo/1AJNJI4ilFXJRYoxP/3Ds+GP8shAOIq8jYXY9N5nGB3Ag104NsagmLAA==, tarball: https://registry.npmjs.org/mdn-data/-/mdn-data-2.35.0.tgz}
 
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==, tarball: https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz}
@@ -3386,10 +3381,6 @@ packages:
     peerDependencies:
       oxc-parser: '>=0.98.0'
 
-  p-event@6.0.1:
-    resolution: {integrity: sha512-Q6Bekk5wpzW5qIyUP4gdMEujObYstZl6DMMOSenwBvV0BlE5LkDwkjs5yHbZmdCEq2o4RJx4tE1vwxFVf2FG1w==, tarball: https://registry.npmjs.org/p-event/-/p-event-6.0.1.tgz}
-    engines: {node: '>=16.17'}
-
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==, tarball: https://registry.npmjs.org/p-limit/-/p-limit-3.1.0.tgz}
     engines: {node: '>=10'}
@@ -3397,10 +3388,6 @@ packages:
   p-locate@5.0.0:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==, tarball: https://registry.npmjs.org/p-locate/-/p-locate-5.0.0.tgz}
     engines: {node: '>=10'}
-
-  p-timeout@6.1.4:
-    resolution: {integrity: sha512-MyIV3ZA/PmyBN/ud8vV9XzwTrNtR4jFrObymZYnZqMmW0zA8Z17vnT0rBgFE/TlohB+YCHqXMgZzb3Csp49vqg==, tarball: https://registry.npmjs.org/p-timeout/-/p-timeout-6.1.4.tgz}
-    engines: {node: '>=14.16'}
 
   package-manager-detector@1.8.0:
     resolution: {integrity: sha512-yQA4H19AmPEoMUeavPMDIe1higySl/gH/yaQrkT/s07Qp+7pp2hYz30N3z2l5BkjVkF9Ow6o0wjJamm2y7Sn0A==, tarball: https://registry.npmjs.org/package-manager-detector/-/package-manager-detector-1.8.0.tgz}
@@ -3590,8 +3577,8 @@ packages:
     resolution: {integrity: sha512-iETxpjK6YoRWJG5o6hXLwvjYAoW+FEZn9os0PD/b6AP6xQwsa/Y7lCVgIixBbUPMfhu+i2LtdeAqVTgGlQarfA==, tarball: https://registry.npmjs.org/regexp-tree/-/regexp-tree-0.1.27.tgz}
     hasBin: true
 
-  regjsparser@0.13.2:
-    resolution: {integrity: sha512-NgRBy2Nx/bE+9F27nVHnqcN5HjyLmecqsqx2PJHu3/IEtADD4WuxuXIVExD5PoSDFVrl78dOonfcOe5O+5nbzQ==, tarball: https://registry.npmjs.org/regjsparser/-/regjsparser-0.13.2.tgz}
+  regjsparser@0.13.3:
+    resolution: {integrity: sha512-ycwFAS14Jw4mppvmK4GR/J6u3WpWpjkEApehuHtLc/8VpPNpDMbQ4WjqwplXifGeyKOzHSFLmSPqzksDQE2Sfg==, tarball: https://registry.npmjs.org/regjsparser/-/regjsparser-0.13.3.tgz}
     hasBin: true
 
   reserved-identifiers@1.2.0:
@@ -3716,10 +3703,6 @@ packages:
     resolution: {integrity: sha512-SlyRoSkdh1dYP0PzclLE7r0M9sgbFKKMFXpFRUMNuKhQSbC6VQIGzq3E0qsfvGJaUFJPGv6Ws1NZ/haTAjfbMA==, tarball: https://registry.npmjs.org/strip-indent/-/strip-indent-4.1.1.tgz}
     engines: {node: '>=12'}
 
-  super-regex@1.1.0:
-    resolution: {integrity: sha512-WHkws2ZflZe41zj6AolvvmaTrWds/VuyeYr9iPVv/oQeaIoVxMKaushfFWpOGDT+GuBrM/sVqF8KUCYQlSSTdQ==, tarball: https://registry.npmjs.org/super-regex/-/super-regex-1.1.0.tgz}
-    engines: {node: '>=18'}
-
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==, tarball: https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz}
     engines: {node: '>= 0.4'}
@@ -3735,10 +3718,6 @@ packages:
   tagged-tag@1.0.0:
     resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==, tarball: https://registry.npmjs.org/tagged-tag/-/tagged-tag-1.0.0.tgz}
     engines: {node: '>=20'}
-
-  time-span@5.1.0:
-    resolution: {integrity: sha512-75voc/9G4rDIJleOo4jPvN4/YC4GRZrY8yy1uU4lwrB3XEQbWve8zXoO5No4eFrGcTAMYyoY67p8jRQdtA1HbA==, tarball: https://registry.npmjs.org/time-span/-/time-span-5.1.0.tgz}
-    engines: {node: '>=12'}
 
   tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==, tarball: https://registry.npmjs.org/tiny-invariant/-/tiny-invariant-1.3.3.tgz}
@@ -3799,10 +3778,6 @@ packages:
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==, tarball: https://registry.npmjs.org/type-check/-/type-check-0.4.0.tgz}
     engines: {node: '>= 0.8.0'}
-
-  type-fest@4.41.0:
-    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==, tarball: https://registry.npmjs.org/type-fest/-/type-fest-4.41.0.tgz}
-    engines: {node: '>=16'}
 
   type-fest@5.10.0:
     resolution: {integrity: sha512-NoSdpq/WEiAg5sjmBkmV/hfxv6HJH4NqPNrqjtSO5CwRmpsDfaf4begxW34KdJykH/l1yHtwBWQkCRdoXO8mPA==, tarball: https://registry.npmjs.org/type-fest/-/type-fest-5.10.0.tgz}
@@ -4124,9 +4099,6 @@ packages:
         optional: true
       webpack-plugin-vuetify:
         optional: true
-
-  web-worker@1.5.0:
-    resolution: {integrity: sha512-RiMReJrTAiA+mBjGONMnjVDP2u3p9R1vkcGz6gDIrOMT3oGuYwX2WRMYI9ipkphSuE5XKEhydbhNEJh4NY9mlw==, tarball: https://registry.npmjs.org/web-worker/-/web-worker-1.5.0.tgz}
 
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==, tarball: https://registry.npmjs.org/webpack-virtual-modules/-/webpack-virtual-modules-0.6.2.tgz}
@@ -4603,6 +4575,11 @@ snapshots:
   '@eslint/css-tree@4.1.0':
     dependencies:
       mdn-data: 2.34.0
+      source-map-js: 1.2.2
+
+  '@eslint/css-tree@4.1.1':
+    dependencies:
+      mdn-data: 2.35.0
       source-map-js: 1.2.2
 
   '@eslint/css@1.4.0':
@@ -5963,8 +5940,6 @@ snapshots:
       '@babel/parser': 7.29.8
       '@babel/types': 7.29.8
 
-  convert-hrtime@5.0.0: {}
-
   convert-source-map@2.0.0: {}
 
   core-js-compat@3.50.0:
@@ -6059,6 +6034,8 @@ snapshots:
   empathic@2.0.1: {}
 
   entities@7.0.1: {}
+
+  entities@8.1.0: {}
 
   error-stack-parser-es@1.0.5: {}
 
@@ -6239,26 +6216,29 @@ snapshots:
       typescript: 6.0.3
       yaml: 2.9.1
 
-  eslint-plugin-unicorn@71.1.0(eslint@10.12.0):
+  eslint-plugin-unicorn@77.0.0(eslint@10.12.0):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0)
+      '@eslint/css-tree': 4.1.1
       browserslist: 4.29.3
       change-case: 5.4.4
       ci-info: 4.4.0
       core-js-compat: 3.50.0
       detect-indent: 7.0.2
+      entities: 8.1.0
       eslint: 10.12.0(jiti@2.7.0)
       find-up-simple: 1.0.1
       globals: 17.13.0
+      identifier-regex: 1.1.0
       indent-string: 5.0.0
       is-builtin-module: 5.0.0
-      is-identifier: 1.1.0
       pluralize: 8.0.0
       quote-js-string: 0.1.0
-      regjsparser: 0.13.2
+      regjsparser: 0.13.3
       reserved-identifiers: 1.2.0
       semver: 7.8.5
       strip-indent: 4.1.1
+      yaml: 2.9.1
 
   eslint-plugin-vue-scoped-css@3.1.3(eslint@10.12.0)(vue-eslint-parser@10.4.1):
     dependencies:
@@ -6426,8 +6406,6 @@ snapshots:
 
   function-bind@1.1.2: {}
 
-  function-timeout@1.0.2: {}
-
   functional-red-black-tree@1.0.1: {}
 
   gensync@1.0.0-beta.2: {}
@@ -6554,11 +6532,6 @@ snapshots:
   is-glob@4.0.3:
     dependencies:
       is-extglob: 2.1.1
-
-  is-identifier@1.1.0:
-    dependencies:
-      identifier-regex: 1.1.0
-      super-regex: 1.1.0
 
   is-in-ssh@1.0.0: {}
 
@@ -6729,12 +6702,6 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  make-asynchronous@1.1.0:
-    dependencies:
-      p-event: 6.0.1
-      type-fest: 4.41.0
-      web-worker: 1.5.0
-
   marked@18.0.14: {}
 
   math-intrinsics@1.1.0: {}
@@ -6742,6 +6709,8 @@ snapshots:
   mdn-data@2.27.1: {}
 
   mdn-data@2.34.0: {}
+
+  mdn-data@2.35.0: {}
 
   mime-db@1.52.0: {}
 
@@ -6905,10 +6874,6 @@ snapshots:
       magic-regexp: 0.10.0
       oxc-parser: 0.150.0
 
-  p-event@6.0.1:
-    dependencies:
-      p-timeout: 6.1.4
-
   p-limit@3.1.0:
     dependencies:
       yocto-queue: 0.1.0
@@ -6916,8 +6881,6 @@ snapshots:
   p-locate@5.0.0:
     dependencies:
       p-limit: 3.1.0
-
-  p-timeout@6.1.4: {}
 
   package-manager-detector@1.8.0: {}
 
@@ -7124,7 +7087,7 @@ snapshots:
 
   regexp-tree@0.1.27: {}
 
-  regjsparser@0.13.2:
+  regjsparser@0.13.3:
     dependencies:
       jsesc: 3.1.0
 
@@ -7252,12 +7215,6 @@ snapshots:
 
   strip-indent@4.1.1: {}
 
-  super-regex@1.1.0:
-    dependencies:
-      function-timeout: 1.0.2
-      make-asynchronous: 1.1.0
-      time-span: 5.1.0
-
   supports-preserve-symlinks-flag@1.0.0: {}
 
   swiper@14.3.0: {}
@@ -7267,10 +7224,6 @@ snapshots:
       '@pkgr/core': 0.3.6
 
   tagged-tag@1.0.0: {}
-
-  time-span@5.1.0:
-    dependencies:
-      convert-hrtime: 5.0.0
 
   tiny-invariant@1.3.3: {}
 
@@ -7313,8 +7266,6 @@ snapshots:
   type-check@0.4.0:
     dependencies:
       prelude-ls: 1.2.1
-
-  type-fest@4.41.0: {}
 
   type-fest@5.10.0:
     dependencies:
@@ -7665,8 +7616,6 @@ snapshots:
       vue: 3.5.43(typescript@6.0.3)
     optionalDependencies:
       typescript: 6.0.3
-
-  web-worker@1.5.0: {}
 
   webpack-virtual-modules@0.6.2: {}
 
