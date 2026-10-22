@@ -109,7 +109,7 @@ jobs:
         run: |
           python3 - <<'PY'
           """Run full lint twice with one pinned toolchain; reject new diagnostics."""
-          import collections,copy,hashlib,json,os,pathlib,re,shutil,signal,subprocess,sys,tempfile,time
+          import base64,collections,copy,hashlib,json,os,pathlib,re,shutil,signal,subprocess,sys,tempfile,time
 
           def unique(pairs):
               result={}
@@ -118,16 +118,50 @@ jobs:
                   result[key]=value
               return result
 
-          def read_json(path):
-              raw=path.read_bytes()
+          def parse_json(raw):
               if not raw or len(raw)>40*1024*1024:raise ValueError('missing_or_oversized_json')
               return json.loads(raw,object_pairs_hook=unique,parse_constant=lambda value:(_ for _ in ()).throw(ValueError('nonfinite_json')))
+
+          def read_json(path):return parse_json(path.read_bytes())
 
           def sha(path):
               h=hashlib.sha256()
               with path.open('rb') as f:
                   for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
               return h.hexdigest()
+
+          def inventory_record(raw):
+              package=parse_json(raw);assert type(package) is dict
+              scripts=package.get('scripts',{});assert type(scripts) is dict
+              return {'package_name':package.get('name'),'lint_script':scripts.get('lint'),'manifest_base64':base64.b64encode(raw).decode(),'manifest_sha256':hashlib.sha256(raw).hexdigest()}
+
+          def capture_workspace_inventory(root,tracked):
+              return {pathlib.PurePosixPath(name).parts[1]:inventory_record((root/name).read_bytes()) for name in tracked if re.fullmatch(r'packages/[a-z0-9-]+/package\.json',name)}
+
+          def verified_inventory(records,manifest_hashes):
+              assert type(records) is dict and records and type(manifest_hashes) is dict,'missing_original_workspace_inventory'
+              declared={pathlib.PurePosixPath(name).parts[1] for name in manifest_hashes if re.fullmatch(r'packages/[a-z0-9-]+/package\.json',name)}
+              assert set(records)==declared,'original_inventory_omits_a_workspace_manifest'
+              contract={};names=set()
+              for workspace,item in records.items():
+                  assert re.fullmatch('[a-z0-9-]+',workspace) and type(item) is dict
+                  assert set(item)=={'package_name','lint_script','manifest_base64','manifest_sha256'}
+                  assert type(item['manifest_base64']) is str and len(item['manifest_base64'])<2*1024*1024
+                  raw=base64.b64decode(item['manifest_base64'],validate=True)
+                  assert hashlib.sha256(raw).hexdigest()==item['manifest_sha256']==manifest_hashes['packages/'+workspace+'/package.json'],'original_workspace_manifest_binding_mismatch'
+                  observed=inventory_record(raw)
+                  assert observed==item,'workspace_inventory_does_not_match_original_manifest'
+                  name=item['package_name'];assert type(name) is str and re.fullmatch(r'(?:@[a-z0-9-]+/)?[a-z0-9-]+',name) and name not in names,'invalid_or_duplicate_workspace_package_name'
+                  assert item['lint_script']=='eslint .','original_workspace_missing_or_changed_lint_command'
+                  names.add(name);contract[workspace]={'package_name':name,'lint_script':item['lint_script']}
+              return contract
+
+          def workspace_contract(evidence):
+              original_base=verified_inventory(evidence['original_base_workspace_inventory'],evidence['original_base_manifests'])
+              original_head=verified_inventory(evidence['original_head_workspace_inventory'],evidence['selected_head_manifests'])
+              assert original_base==original_head,'original_base_head_workspace_contract_changed'
+              selected=evidence['workspaces'];assert type(selected) is list and selected==sorted(original_base),'comparison_workspace_set_drops_or_changes_original_coverage'
+              return {workspace:original_base[workspace]['package_name'] for workspace in selected}
 
           def diagnostics(report,root,producer):
               assert producer['timed_out'] is False and type(producer['exit']) is int and producer['exit'] in (0,1),'lint_producer_crashed_or_timed_out'
@@ -177,8 +211,8 @@ jobs:
               assert evidence['base_sha']==expected_base and evidence['head_sha']==expected_head,'mismatched_source_identity'
               assert evidence['toolchain_base']==evidence['toolchain_head'],'different_inspected_toolchains'
               old=collections.Counter();new=collections.Counter();totals={k:{'errors':0,'warnings':0,'suppressed':0,'files':0} for k in ('base','head')}
-              assert evidence['workspaces'] and len(evidence['workspaces'])==len(set(evidence['workspaces']))
-              for workspace in evidence['workspaces']:
+              workspaces=workspace_contract(evidence)
+              for workspace in workspaces:
                   assert re.fullmatch('[a-z0-9-]+',workspace),'invalid_workspace_identity'
                   for label,root,total in [('base',base,old),('head',head,new)]:
                       record=evidence['producers'][label][workspace];report=pathlib.Path(record['report'])
@@ -196,10 +230,13 @@ jobs:
                   a='1'*40;b='2'*40
                   message={'ruleId':'example/rule','severity':2,'message':'Existing diagnostic','line':1,'column':1,'nodeType':'Identifier','messageId':'example'}
                   def fixture():
-                      data={'base_sha':a,'head_sha':b,'toolchain_base':{'lock':'same'},'toolchain_head':{'lock':'same'},'workspaces':['frontend'],'producers':{'base':{},'head':{}}}
+                      inventories={workspace:inventory_record(json.dumps({'name':'@jellyfin-vue/'+workspace,'scripts':{'lint':'eslint .'}}).encode()) for workspace in ('frontend','shared')}
+                      manifests={'packages/'+workspace+'/package.json':entry['manifest_sha256'] for workspace,entry in inventories.items()}
+                      data={'base_sha':a,'head_sha':b,'toolchain_base':{'lock':'same'},'toolchain_head':{'lock':'same'},'workspaces':['frontend','shared'],'original_base_workspace_inventory':copy.deepcopy(inventories),'original_head_workspace_inventory':copy.deepcopy(inventories),'original_base_manifests':dict(manifests),'selected_head_manifests':dict(manifests),'producers':{'base':{},'head':{}}}
                       for label,root in [('base',base),('head',head)]:
-                          report=folder/(label+'.json');report.write_text(json.dumps([{'filePath':str(root/'old.ts'),'messages':[message],'errorCount':1,'warningCount':0,'fatalErrorCount':0}]))
-                          data['producers'][label]['frontend']={'report':str(report),'report_sha256':sha(report),'exit':1,'timed_out':False}
+                          for workspace in ('frontend','shared'):
+                              report=folder/(label+'-'+workspace+'.json');active=workspace=='frontend';report.write_text(json.dumps([{'filePath':str(root/workspace/'old.ts'),'messages':[message] if active else [],'errorCount':int(active),'warningCount':0,'fatalErrorCount':0}]))
+                              data['producers'][label][workspace]={'report':str(report),'report_sha256':sha(report),'exit':int(active),'timed_out':False}
                       return data
                   passed=[]
                   def check(name,change=None,accept=False):
@@ -229,6 +266,16 @@ jobs:
                   check('report hash mismatch',lambda d:d['producers']['head']['frontend'].update(report_sha256='0'*64))
                   check('boolean line number',lambda d:edit(d,lambda r:r[0]['messages'][0].update(line=True)))
                   check('new suppression',lambda d:edit(d,lambda r:r[0].update(suppressedMessages=[{**message,'suppressions':[{'kind':'directive','justification':'new'}]}])))
+                  def change_head_manifest(data,change):
+                      item=data['original_head_workspace_inventory']['frontend'];package=parse_json(base64.b64decode(item['manifest_base64']));change(package)
+                      item=inventory_record(json.dumps(package).encode());data['original_head_workspace_inventory']['frontend']=item;data['selected_head_manifests']['packages/frontend/package.json']=item['manifest_sha256']
+                  check('removed original head workspace',lambda d:(d['original_head_workspace_inventory'].pop('shared'),d['selected_head_manifests'].pop('packages/shared/package.json')))
+                  check('renamed workspace package',lambda d:change_head_manifest(d,lambda p:p.update(name='@jellyfin-vue/renamed')))
+                  check('changed lint script',lambda d:change_head_manifest(d,lambda p:p['scripts'].update(lint='eslint src')))
+                  check('missing lint script',lambda d:change_head_manifest(d,lambda p:p['scripts'].pop('lint')))
+                  check('forged comparison workspace subset',lambda d:d.update(workspaces=['frontend']))
+                  check('forged declared original workspace name',lambda d:d['original_head_workspace_inventory']['frontend'].update(package_name='@jellyfin-vue/forged'))
+                  check('forged original inventory subset',lambda d:(d['original_head_workspace_inventory'].pop('shared'),d['original_base_workspace_inventory'].pop('shared'),d.update(workspaces=['frontend'])))
                   print(json.dumps({'self_tests':'pass','count':len(passed),'cases':passed}))
 
           def run_job(base,head,out,expected_base,expected_head):
@@ -257,20 +304,18 @@ jobs:
               policy_hashes={name:sha(head/name) for name in policy(head_files)}
               assert policy_hashes=={name:sha(base/name) for name in policy(base_files)},'lint_policy_changed_requires_separate_review'
               manifests=[name for name in head_files if pathlib.PurePosixPath(name).name in ('package.json','pnpm-lock.yaml','pnpm-workspace.yaml','.npmrc')]
-              assert manifests==[name for name in base_files if pathlib.PurePosixPath(name).name in ('package.json','pnpm-lock.yaml','pnpm-workspace.yaml','.npmrc')],'toolchain_manifest_set_changed'
-              inspection['original_base_manifests']={name:sha(base/name) for name in manifests}
+              base_manifests=[name for name in base_files if pathlib.PurePosixPath(name).name in ('package.json','pnpm-lock.yaml','pnpm-workspace.yaml','.npmrc')]
+              inspection['original_base_manifests']={name:sha(base/name) for name in base_manifests}
               inspection['selected_head_manifests']={name:sha(head/name) for name in manifests}
+              # Capture both original source contracts before overlaying any dependency declarations.
+              inspection['original_base_workspace_inventory']=capture_workspace_inventory(base,base_files)
+              inspection['original_head_workspace_inventory']=capture_workspace_inventory(head,head_files)
+              inspection['workspaces']=sorted(inspection['original_base_workspace_inventory']);persist()
+              workspaces=workspace_contract(inspection)
+              assert manifests==base_manifests,'toolchain_manifest_set_changed'
               # Overlay dependency declarations only; both source trees use the exact reviewed head lock and configuration.
               for name in manifests:shutil.copyfile(head/name,base/name)
-              workspaces={}
-              for folder in sorted((head/'packages').iterdir()):
-                  manifest=folder/'package.json'
-                  if not manifest.is_file():continue
-                  package=read_json(manifest)
-                  if 'lint' not in package.get('scripts',{}):continue
-                  assert package['scripts']['lint']=='eslint .','unknown_lint_command_requires_review'
-                  workspaces[folder.name]=package['name']
-              assert workspaces;inspection['workspaces']=list(workspaces);persist()
+              persist()
               for label,root in [('base',base),('head',head)]:
                   install=command(['corepack','pnpm','ci'],root,label+'-frozen-install');inspection[label+'_install']=install;persist()
                   assert install['exit']==0 and not install['timed_out'],'frozen_install_failed'
