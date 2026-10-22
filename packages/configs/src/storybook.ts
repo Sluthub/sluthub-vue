@@ -19,11 +19,16 @@ export default {
       }
     }
   },
-  // vue-component-meta handles functional components; exclude the obsolete docgen transformer.
+  // Keep Storybook's own preview entry and vue-component-meta pipeline.
   async viteFinal(config) {
     const plugins = await Promise.all((config.plugins ?? []).map(plugin => Promise.resolve(plugin)));
 
-    config.plugins = plugins.filter(plugin => !plugin || Array.isArray(plugin) || plugin.name !== 'storybook:vue-docgen-plugin');
+    const excludedPlugins = new Set([
+      'Jellyfin_Vue:monorepo_setup',
+      'storybook:vue-docgen-plugin'
+    ]);
+
+    config.plugins = plugins.filter(plugin => !plugin || Array.isArray(plugin) || !excludedPlugins.has(plugin.name));
 
     return config;
   }

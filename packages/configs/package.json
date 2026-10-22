@@ -17,12 +17,12 @@
     "lint:inspect": "eslint-config-inspector"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "5.4.0",
+    "@chromatic-com/storybook": "5.5.1",
     "@eslint/config-inspector": "3.5.0",
     "@eslint/css": "1.4.0",
     "@eslint/js": "10.0.1",
     "@eslint/json": "2.1.0",
-    "@storybook/addon-a11y": "10.6.1",
+    "@storybook/addon-a11y": "10.6.2",
     "@storybook/vue3": "10.6.1",
     "@storybook/vue3-vite": "10.6.1",
     "@stylistic/eslint-plugin": "5.10.0",
@@ -45,7 +45,7 @@
     "find-up-simple": "catalog:development",
     "globals": "17.13.0",
     "jiti": "2.7.0",
-    "storybook": "10.6.1",
+    "storybook": "10.6.2",
     "type-fest": "5.10.0",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0",

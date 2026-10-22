@@ -209,8 +209,8 @@ importers:
   packages/configs:
     devDependencies:
       '@chromatic-com/storybook':
-        specifier: 5.4.0
-        version: 5.4.0(storybook@10.6.1)
+        specifier: 5.5.1
+        version: 5.5.1(storybook@10.6.2)
       '@eslint/config-inspector':
         specifier: 3.5.0
         version: 3.5.0(crossws@0.4.12)(eslint@10.12.0)(srvx@1.0.4)
@@ -224,14 +224,14 @@ importers:
         specifier: 2.1.0
         version: 2.1.0
       '@storybook/addon-a11y':
-        specifier: 10.6.1
-        version: 10.6.1(storybook@10.6.1)
+        specifier: 10.6.2
+        version: 10.6.2(storybook@10.6.2)
       '@storybook/vue3':
         specifier: 10.6.1
-        version: 10.6.1(storybook@10.6.1)(typescript@6.0.3)(vue@3.5.43)
+        version: 10.6.1(storybook@10.6.2)(typescript@6.0.3)(vue@3.5.43)
       '@storybook/vue3-vite':
         specifier: 10.6.1
-        version: 10.6.1(storybook@10.6.1)(typescript@6.0.3)(vite@8.3.3)(vue@3.5.43)
+        version: 10.6.1(storybook@10.6.2)(typescript@6.0.3)(vite@8.3.3)(vue@3.5.43)
       '@stylistic/eslint-plugin':
         specifier: 5.10.0
         version: 5.10.0(eslint@10.12.0)
@@ -293,8 +293,8 @@ importers:
         specifier: 2.7.0
         version: 2.7.0
       storybook:
-        specifier: 10.6.1
-        version: 10.6.1(react@19.2.8)
+        specifier: 10.6.2
+        version: 10.6.2(react@19.2.8)
       type-fest:
         specifier: 5.10.0
         version: 5.10.0
@@ -519,6 +519,12 @@ importers:
       '@jellyfin-vue/configs':
         specifier: workspace:*
         version: link:../configs
+      '@storybook/vue3':
+        specifier: 10.6.1
+        version: 10.6.1(storybook@10.6.2)(typescript@6.0.3)(vue@3.5.43)
+      i18next:
+        specifier: catalog:runtime
+        version: 26.4.2(typescript@6.0.3)
       unplugin-vue-components:
         specifier: catalog:development
         version: 32.1.0(esbuild@0.28.2)(rolldown@1.2.12)(vite@8.3.3)(vue@3.5.43)
@@ -706,8 +712,8 @@ packages:
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==, tarball: https://registry.npmjs.org/@cacheable/utils/-/utils-2.5.0.tgz}
 
-  '@chromatic-com/storybook@5.4.0':
-    resolution: {integrity: sha512-U4Rny8H6BBa8uiRMnL0CFZyqZ0MWogN/szlMugsInfSnX+PtrLCVp2kjrvaG9bv6X5xSgHpnmepOzLm8+QFseA==, tarball: https://registry.npmjs.org/@chromatic-com/storybook/-/storybook-5.4.0.tgz}
+  '@chromatic-com/storybook@5.5.1':
+    resolution: {integrity: sha512-DOtUEBIJHmqsOWg+Hi1t5m5FTNlyzL0NpZUwQob+ex30nDvL4p+MrYctmvEqH/QT72mf9mLXbz3Uj8aoWD2OYA==, tarball: https://registry.npmjs.org/@chromatic-com/storybook/-/storybook-5.5.1.tgz}
     engines: {node: '>=20.0.0', yarn: '>=1.22.18'}
     peerDependencies:
       storybook: ^0.0.0-0 || ^10.1.0 || ^10.1.0-0 || ^10.2.0-0 || ^10.3.0-0 || ^10.4.0-0 || ^10.5.0-0 || ^10.6.0-0 || ^11.0.0-0
@@ -1631,10 +1637,10 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==, tarball: https://registry.npmjs.org/@standard-schema/spec/-/spec-1.1.0.tgz}
 
-  '@storybook/addon-a11y@10.6.1':
-    resolution: {integrity: sha512-73wx4xyOMBbFIF4DnlfHy5o/c5sWjawn/tb+zq/GAKXkYCuBziE5aa3WDzRDhdxN259p5kTDyJcRi1SlUEUexg==, tarball: https://registry.npmjs.org/@storybook/addon-a11y/-/addon-a11y-10.6.1.tgz}
+  '@storybook/addon-a11y@10.6.2':
+    resolution: {integrity: sha512-zleS+btwrTRcUf3opbZntKsEt6PTqAtxsek08tx5jh5fRvd6wWmtnwW3uaBcypfIKnheTB3KGljJwFX+Mc+Umg==, tarball: https://registry.npmjs.org/@storybook/addon-a11y/-/addon-a11y-10.6.2.tgz}
     peerDependencies:
-      storybook: ^10.6.1
+      storybook: ^10.6.2
 
   '@storybook/builder-vite@10.6.1':
     resolution: {integrity: sha512-kUMRRRS4MpJdxOLhrlQX3cpMYi2vVB3tIIRXyqWmAjVM6xT7OZ1SCQEMFPP+S3ToRqaYWZQb8aBqrJucbbYufA==, tarball: https://registry.npmjs.org/@storybook/builder-vite/-/builder-vite-10.6.1.tgz}
@@ -3689,8 +3695,8 @@ packages:
   std-env@4.2.0:
     resolution: {integrity: sha512-oCUKSupKTHX53EyjDtuZQ64pjLJ6yYCtpmEw0goYxtjG9KpbRe8KAsl2tBUGU9DyMcJ0RwJ8GqJAFzMXcXW1Rw==, tarball: https://registry.npmjs.org/std-env/-/std-env-4.2.0.tgz}
 
-  storybook@10.6.1:
-    resolution: {integrity: sha512-NeEmukMWPA5OqHizUkQtxCIhGt7MUZLPY4FFgpC0LNiipjrac/oKpH0TxI+9Zc+vI5+IoN+NiskOmBP7gtYfmA==, tarball: https://registry.npmjs.org/storybook/-/storybook-10.6.1.tgz}
+  storybook@10.6.2:
+    resolution: {integrity: sha512-qHDINMiapxFUxYb+xC3j8u7Y+85X3u+/PlytE/wmnyg+bU0agCW3jUmWP4vIh2MioO2jTK/2B3Lcw6IpRFzQBA==, tarball: https://registry.npmjs.org/storybook/-/storybook-10.6.2.tgz}
     hasBin: true
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -4402,12 +4408,12 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@chromatic-com/storybook@5.4.0(storybook@10.6.1)':
+  '@chromatic-com/storybook@5.5.1(storybook@10.6.2)':
     dependencies:
       '@neoconfetti/react': 1.0.0
       chromatic: 18.7.2
       jsonfile: 6.2.1
-      storybook: 10.6.1(react@19.2.8)
+      storybook: 10.6.2(react@19.2.8)
       strip-ansi: 7.2.0
     transitivePeerDependencies:
       - '@chromatic-com/cypress'
@@ -5032,15 +5038,15 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@storybook/addon-a11y@10.6.1(storybook@10.6.1)':
+  '@storybook/addon-a11y@10.6.2(storybook@10.6.2)':
     dependencies:
       '@storybook/global': 5.0.0
       axe-core: 4.13.0
-      storybook: 10.6.1(react@19.2.8)
+      storybook: 10.6.2(react@19.2.8)
 
-  '@storybook/builder-vite@10.6.1(storybook@10.6.1)(vite@8.3.3)':
+  '@storybook/builder-vite@10.6.1(storybook@10.6.2)(vite@8.3.3)':
     dependencies:
-      storybook: 10.6.1(react@19.2.8)
+      storybook: 10.6.2(react@19.2.8)
       ts-dedent: 2.3.0
       vite: 8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
 
@@ -5050,24 +5056,24 @@ snapshots:
     dependencies:
       react: 19.2.8
 
-  '@storybook/vue3-vite@10.6.1(storybook@10.6.1)(typescript@6.0.3)(vite@8.3.3)(vue@3.5.43)':
+  '@storybook/vue3-vite@10.6.1(storybook@10.6.2)(typescript@6.0.3)(vite@8.3.3)(vue@3.5.43)':
     dependencies:
-      '@storybook/builder-vite': 10.6.1(storybook@10.6.1)(vite@8.3.3)
-      '@storybook/vue3': 10.6.1(storybook@10.6.1)(typescript@6.0.3)(vue@3.5.43)
+      '@storybook/builder-vite': 10.6.1(storybook@10.6.2)(vite@8.3.3)
+      '@storybook/vue3': 10.6.1(storybook@10.6.2)(typescript@6.0.3)(vue@3.5.43)
       magic-string: 1.4.1
-      storybook: 10.6.1(react@19.2.8)
+      storybook: 10.6.2(react@19.2.8)
       vite: 8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
     optionalDependencies:
       typescript: 6.0.3
     transitivePeerDependencies:
       - vue
 
-  '@storybook/vue3@10.6.1(storybook@10.6.1)(typescript@6.0.3)(vue@3.5.43)':
+  '@storybook/vue3@10.6.1(storybook@10.6.2)(typescript@6.0.3)(vue@3.5.43)':
     dependencies:
       '@storybook/global': 5.0.0
       '@vue/compiler-dom': 3.5.43
       '@vue/language-core': 3.3.12
-      storybook: 10.6.1(react@19.2.8)
+      storybook: 10.6.2(react@19.2.8)
       type-fest: 5.10.0
       vue: 3.5.43(typescript@6.0.3)
       vue-component-meta: 3.3.11(typescript@6.0.3)
@@ -7218,7 +7224,7 @@ snapshots:
 
   std-env@4.2.0: {}
 
-  storybook@10.6.1(react@19.2.8):
+  storybook@10.6.2(react@19.2.8):
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.1.0(react@19.2.8)

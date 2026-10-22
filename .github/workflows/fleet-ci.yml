@@ -18,7 +18,7 @@ jobs:
         persist-credentials: false
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
       with:
-        node-version: '24'
+        node-version: '24.22.1'
     - name: Install locked dependencies
       run: corepack pnpm ci
     - name: Run actual tests
@@ -38,3 +38,27 @@ jobs:
         path: packages/frontend/dist
         if-no-files-found: error
         retention-days: 7
+
+  storybook:
+    name: Storybook (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+        - frontend
+        - ui-toolkit
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      with:
+        node-version: '24.22.1'
+    - name: Install locked dependencies
+      run: corepack pnpm ci
+    - name: Build actual Storybook preview
+      run: corepack pnpm --filter @jellyfin-vue/${{ matrix.target }} exec storybook build --config-dir storybook --output-dir "$RUNNER_TEMP/storybook-${{ matrix.target }}" --disable-telemetry
+      env:
+        STORYBOOK_DISABLE_TELEMETRY: '1'

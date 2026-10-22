@@ -30,6 +30,8 @@
   },
   "devDependencies": {
     "@jellyfin-vue/configs": "workspace:*",
+    "@storybook/vue3": "10.6.1",
+    "i18next": "catalog:runtime",
     "unplugin-vue-components": "catalog:development"
   }
 }
