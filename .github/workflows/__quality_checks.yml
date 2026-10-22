@@ -7,6 +7,11 @@ on:
         required: true
         type: string
   workflow_dispatch:
+    inputs:
+      baseline:
+        description: Exact baseline commit for full lint regression comparison
+        required: true
+        type: string
 
 jobs:
   dependency-review:
@@ -32,7 +37,6 @@ jobs:
       fail-fast: false
       matrix:
         command:
-          - lint
           - test
           - check:types
           # Checks for dependency cycles in the bundle and in the monorepo setup
@@ -58,7 +62,254 @@ jobs:
       - name: Run ${{ matrix.command }} ⚙️
         run: corepack pnpm ${{ matrix.command }}
 
+  lint_regression:
+    name: Lint regression (existing baseline recorded)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout candidate source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.commit || github.sha }}
+          path: candidate
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Bind exact base and head identities
+        id: identity
+        env:
+          BASE_INPUT: ${{ inputs.baseline || github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          HEAD_EXPECT: ${{ inputs.commit || github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os,pathlib,re,subprocess
+          head=subprocess.check_output(['git','-C','candidate','rev-parse','HEAD'],text=True).strip()
+          assert re.fullmatch('[0-9a-f]{40}',os.environ['HEAD_EXPECT']) and head==os.environ['HEAD_EXPECT']
+          base=os.environ['BASE_INPUT']
+          assert re.fullmatch('[0-9a-f]{40}',base) and base!='0'*40,'explicit_baseline_required'
+          with open(os.environ['GITHUB_OUTPUT'],'a') as output:output.write('base='+base+'\nhead='+head+'\n')
+          PY
+      - name: Checkout baseline source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.identity.outputs.base }}
+          path: baseline
+          persist-credentials: false
+      - name: Setup identical Node environment
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          check-latest: true
+      - name: Full base and head lint with strict regression comparison
+        env:
+          LINT_BASE_DIR: ${{ github.workspace }}/baseline
+          LINT_HEAD_DIR: ${{ github.workspace }}/candidate
+          LINT_EVIDENCE_DIR: ${{ github.workspace }}/lint-evidence
+          LINT_EXPECT_BASE: ${{ steps.identity.outputs.base }}
+          LINT_EXPECT_HEAD: ${{ steps.identity.outputs.head }}
+        run: |
+          python3 - <<'PY'
+          """Run full lint twice with one pinned toolchain; reject new diagnostics."""
+          import collections,copy,hashlib,json,os,pathlib,re,shutil,signal,subprocess,sys,tempfile,time
+
+          def unique(pairs):
+              result={}
+              for key,value in pairs:
+                  if key in result:raise ValueError('duplicate_json_key')
+                  result[key]=value
+              return result
+
+          def read_json(path):
+              raw=path.read_bytes()
+              if not raw or len(raw)>40*1024*1024:raise ValueError('missing_or_oversized_json')
+              return json.loads(raw,object_pairs_hook=unique,parse_constant=lambda value:(_ for _ in ()).throw(ValueError('nonfinite_json')))
+
+          def sha(path):
+              h=hashlib.sha256()
+              with path.open('rb') as f:
+                  for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
+              return h.hexdigest()
+
+          def diagnostics(report,root,producer):
+              assert producer['timed_out'] is False and type(producer['exit']) is int and producer['exit'] in (0,1),'lint_producer_crashed_or_timed_out'
+              rows=read_json(report);assert type(rows) is list and rows,'lint_report_missing_file_inventory'
+              counts=collections.Counter();files=set();errors=warnings=suppressed=0
+              for row in rows:
+                  assert type(row) is dict and type(row.get('filePath')) is str
+                  file=pathlib.Path(row['filePath']).resolve();relative=file.relative_to(root.resolve()).as_posix()
+                  assert relative not in files,'duplicate_report_file';files.add(relative)
+                  messages=row.get('messages');assert type(messages) is list
+                  for field in ('errorCount','warningCount','fatalErrorCount'):
+                      assert type(row.get(field)) is int and row[field]>=0,'invalid_diagnostic_count'
+                  local_errors=local_warnings=local_fatal=0
+                  for message in messages:
+                      assert type(message) is dict and type(message.get('severity')) is int and message['severity'] in (1,2)
+                      assert type(message.get('message')) is str and message['message']
+                      assert type(message.get('fatal',False)) is bool
+                      local_fatal+=message.get('fatal',False)
+                      assert not message.get('fatal',False),'parser_or_configuration_failure_is_not_a_baseline'
+                      assert type(message.get('ruleId')) is str and message['ruleId'],'missing_diagnostic_rule'
+                      for field in ('line','column'):
+                          assert type(message.get(field)) is int and message[field]>0,'invalid_diagnostic_position'
+                      for field in ('endLine','endColumn'):
+                          assert message.get(field) is None or type(message[field]) is int and message[field]>0
+                      for field in ('messageId','nodeType'):
+                          assert message.get(field) is None or type(message[field]) is str
+                      local_errors+=message['severity']==2;local_warnings+=message['severity']==1
+                      fields=('ruleId','severity','message','line','column','endLine','endColumn','messageId','nodeType')
+                      fingerprint=[relative,*[message.get(field) for field in fields]]
+                      counts[json.dumps(fingerprint,ensure_ascii=True,separators=(',',':'))]+=1
+                  assert (row['errorCount'],row['warningCount'],row['fatalErrorCount'])==(local_errors,local_warnings,local_fatal),'report_count_mismatch'
+                  hidden=row.get('suppressedMessages',[]);assert type(hidden) is list
+                  for message in hidden:
+                      assert type(message) is dict and type(message.get('ruleId')) is str and message['ruleId']
+                      assert type(message.get('severity')) is int and message['severity'] in (1,2)
+                      assert type(message.get('message')) is str and type(message.get('line')) is int and message['line']>0
+                      assert type(message.get('column')) is int and message['column']>0
+                      fingerprint=['suppressed',relative,*[message.get(field) for field in ('ruleId','severity','message','line','column','endLine','endColumn','messageId','nodeType','suppressions')]]
+                      counts[json.dumps(fingerprint,ensure_ascii=True,separators=(',',':'),sort_keys=True)]+=1;suppressed+=1
+                  errors+=local_errors;warnings+=local_warnings
+              assert producer['exit']!=0 or errors==0,'successful_exit_with_lint_errors'
+              assert producer['exit']!=1 or errors+warnings>0,'nonzero_lint_without_diagnostics'
+              return counts,{'errors':errors,'warnings':warnings,'suppressed':suppressed,'files':len(files)}
+
+          def compare(base,head,evidence,expected_base,expected_head):
+              assert re.fullmatch('[0-9a-f]{40}',expected_base) and re.fullmatch('[0-9a-f]{40}',expected_head)
+              assert evidence['base_sha']==expected_base and evidence['head_sha']==expected_head,'mismatched_source_identity'
+              assert evidence['toolchain_base']==evidence['toolchain_head'],'different_inspected_toolchains'
+              old=collections.Counter();new=collections.Counter();totals={k:{'errors':0,'warnings':0,'suppressed':0,'files':0} for k in ('base','head')}
+              assert evidence['workspaces'] and len(evidence['workspaces'])==len(set(evidence['workspaces']))
+              for workspace in evidence['workspaces']:
+                  assert re.fullmatch('[a-z0-9-]+',workspace),'invalid_workspace_identity'
+                  for label,root,total in [('base',base,old),('head',head,new)]:
+                      record=evidence['producers'][label][workspace];report=pathlib.Path(record['report'])
+                      assert sha(report)==record['report_sha256'],'lint_report_changed_or_missing'
+                      diagnostics_set,summary=diagnostics(report,root,record)
+                      total.update(diagnostics_set)
+                      for key,value in summary.items():totals[label][key]+=value
+              added=new-old;removed=old-new
+              assert not added,'new_lint_diagnostics:'+json.dumps(list(added.elements())[:20])
+              return {'state':'lint_regression_pass','baseline_lint_clean':totals['base']['errors']==totals['base']['warnings']==0,'head_lint_clean':totals['head']['errors']==totals['head']['warnings']==0,'base_sha':expected_base,'head_sha':expected_head,'new_diagnostics':0,'removed_diagnostics':sum(removed.values()),'totals':totals,'limitation':'Full raw lint reports remain authoritative; unchanged existing diagnostics are recorded, not declared clean.'}
+
+          def self_test():
+              with tempfile.TemporaryDirectory() as temporary:
+                  folder=pathlib.Path(temporary);base=folder/'base';head=folder/'head';base.mkdir();head.mkdir()
+                  a='1'*40;b='2'*40
+                  message={'ruleId':'example/rule','severity':2,'message':'Existing diagnostic','line':1,'column':1,'nodeType':'Identifier','messageId':'example'}
+                  def fixture():
+                      data={'base_sha':a,'head_sha':b,'toolchain_base':{'lock':'same'},'toolchain_head':{'lock':'same'},'workspaces':['frontend'],'producers':{'base':{},'head':{}}}
+                      for label,root in [('base',base),('head',head)]:
+                          report=folder/(label+'.json');report.write_text(json.dumps([{'filePath':str(root/'old.ts'),'messages':[message],'errorCount':1,'warningCount':0,'fatalErrorCount':0}]))
+                          data['producers'][label]['frontend']={'report':str(report),'report_sha256':sha(report),'exit':1,'timed_out':False}
+                      return data
+                  passed=[]
+                  def check(name,change=None,accept=False):
+                      data=fixture()
+                      if change:change(data)
+                      try:compare(base,head,data,a,b)
+                      except (AssertionError,ValueError,FileNotFoundError,KeyError):assert not accept,name
+                      else:assert accept,name
+                      passed.append(name)
+                  def edit(data,change):
+                      row=data['producers']['head']['frontend'];path=pathlib.Path(row['report']);body=read_json(path);change(body);path.write_text(json.dumps(body));row['report_sha256']=sha(path)
+                  check('unchanged existing diagnostic is explicitly recorded',accept=True)
+                  check('new error',lambda d:edit(d,lambda r:(r[0]['messages'].append({**message,'line':2}),r[0].update(errorCount=2))))
+                  check('changed rule',lambda d:edit(d,lambda r:r[0]['messages'][0].update(ruleId='different/rule')))
+                  check('new affected file',lambda d:edit(d,lambda r:r[0].update(filePath=str(head/'new.ts'))))
+                  check('missing report',lambda d:pathlib.Path(d['producers']['head']['frontend']['report']).unlink())
+                  check('producer crash',lambda d:d['producers']['head']['frontend'].update(exit=2))
+                  check('producer timeout',lambda d:d['producers']['head']['frontend'].update(timed_out=True))
+                  check('mismatched base',lambda d:d.update(base_sha='3'*40))
+                  check('mismatched head',lambda d:d.update(head_sha='3'*40))
+                  check('different toolchain',lambda d:d.update(toolchain_head={'lock':'different'}))
+                  check('forged count',lambda d:edit(d,lambda r:r[0].update(errorCount=0)))
+                  check('parser failure',lambda d:edit(d,lambda r:r[0]['messages'][0].update(fatal=True,ruleId=None)))
+                  check('empty report inventory',lambda d:edit(d,lambda r:r.clear()))
+                  check('boolean producer exit',lambda d:d['producers']['head']['frontend'].update(exit=True))
+                  check('removed diagnostic',lambda d:edit(d,lambda r:(r[0].update(messages=[],errorCount=0),d['producers']['head']['frontend'].update(exit=0))),accept=True)
+                  check('report hash mismatch',lambda d:d['producers']['head']['frontend'].update(report_sha256='0'*64))
+                  check('boolean line number',lambda d:edit(d,lambda r:r[0]['messages'][0].update(line=True)))
+                  check('new suppression',lambda d:edit(d,lambda r:r[0].update(suppressedMessages=[{**message,'suppressions':[{'kind':'directive','justification':'new'}]}])))
+                  print(json.dumps({'self_tests':'pass','count':len(passed),'cases':passed}))
+
+          def run_job(base,head,out,expected_base,expected_head):
+              assert sys.platform=='linux','canonical_lint_runs_on_linux'
+              out.mkdir(parents=True,exist_ok=False)
+              inspection={'base_sha':expected_base,'head_sha':expected_head,'producers':{'base':{},'head':{}}};deadline=time.monotonic()+20*60
+              def persist(): (out/'inspection.json').write_text(json.dumps(inspection,indent=2))
+              def command(args,cwd,label,timeout=600):
+                  path=out/(label+'.log');started=time.time();timed_out=False
+                  assert time.monotonic()<deadline,'overall_lint_collection_deadline'
+                  timeout=min(timeout,deadline-time.monotonic())
+                  with path.open('xb') as log:
+                      process=subprocess.Popen(args,cwd=cwd,env={**os.environ,'CI':'true'},stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+                      try:code=process.wait(timeout=timeout)
+                      except subprocess.TimeoutExpired:
+                          timed_out=True;os.killpg(process.pid,signal.SIGTERM)
+                          try:code=process.wait(timeout=10)
+                          except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);code=process.wait(timeout=10)
+                  return {'exit':code,'timed_out':timed_out,'seconds':time.time()-started,'log':str(path)}
+              def git(root,*args):return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
+              assert git(base,'rev-parse','HEAD')==expected_base and git(head,'rev-parse','HEAD')==expected_head,'checkout_source_identity_mismatch'
+              tracked=lambda root:git(root,'ls-files','-z').strip('\0').split('\0')
+              head_files=tracked(head);base_files=tracked(base)
+              policy=lambda files:[name for name in files if '/src/lint/' in name or pathlib.PurePosixPath(name).name.startswith('eslint.config.')]
+              assert policy(base_files)==policy(head_files),'lint_policy_file_set_changed'
+              policy_hashes={name:sha(head/name) for name in policy(head_files)}
+              assert policy_hashes=={name:sha(base/name) for name in policy(base_files)},'lint_policy_changed_requires_separate_review'
+              manifests=[name for name in head_files if pathlib.PurePosixPath(name).name in ('package.json','pnpm-lock.yaml','pnpm-workspace.yaml','.npmrc')]
+              assert manifests==[name for name in base_files if pathlib.PurePosixPath(name).name in ('package.json','pnpm-lock.yaml','pnpm-workspace.yaml','.npmrc')],'toolchain_manifest_set_changed'
+              inspection['original_base_manifests']={name:sha(base/name) for name in manifests}
+              inspection['selected_head_manifests']={name:sha(head/name) for name in manifests}
+              # Overlay dependency declarations only; both source trees use the exact reviewed head lock and configuration.
+              for name in manifests:shutil.copyfile(head/name,base/name)
+              workspaces={}
+              for folder in sorted((head/'packages').iterdir()):
+                  manifest=folder/'package.json'
+                  if not manifest.is_file():continue
+                  package=read_json(manifest)
+                  if 'lint' not in package.get('scripts',{}):continue
+                  assert package['scripts']['lint']=='eslint .','unknown_lint_command_requires_review'
+                  workspaces[folder.name]=package['name']
+              assert workspaces;inspection['workspaces']=list(workspaces);persist()
+              for label,root in [('base',base),('head',head)]:
+                  install=command(['corepack','pnpm','ci'],root,label+'-frozen-install');inspection[label+'_install']=install;persist()
+                  assert install['exit']==0 and not install['timed_out'],'frozen_install_failed'
+                  node=subprocess.check_output(['node','--version'],text=True).strip();pnpm=subprocess.check_output(['corepack','pnpm','--version'],cwd=root,text=True).strip()
+                  assert node.startswith('v24.') and pnpm==read_json(root/'package.json')['packageManager'].split('@')[-1]
+                  versions={}
+                  for workspace,name in workspaces.items():
+                      version=command(['corepack','pnpm','--filter',name,'exec','eslint','--version'],root,label+'-'+workspace+'-version',60)
+                      assert version['exit']==0 and not version['timed_out']
+                      values=re.findall(r'^v?(\d+\.\d+\.\d+)$',pathlib.Path(version['log']).read_text(),re.M);assert len(values)==1,'ambiguous_eslint_version'
+                      assert values[0]==read_json(root/'packages/configs/package.json')['devDependencies']['eslint'];versions[workspace]=values[0]
+                  inspection['toolchain_'+label]={'node':node,'pnpm':pnpm,'manifests':{name:sha(root/name) for name in manifests},'lint_policy':{name:sha(root/name) for name in policy(head_files)},'eslint_versions':versions};persist()
+                  for workspace,name in workspaces.items():
+                      report=out/(label+'-'+workspace+'.json')
+                      print(label+': full lint '+workspace,flush=True)
+                      result=command(['corepack','pnpm','--filter',name,'exec','eslint','.','--format','json','--output-file',str(report)],root,label+'-'+workspace+'-full-lint',600)
+                      result.update(report=str(report),report_sha256=sha(report) if report.is_file() else None)
+                      inspection['producers'][label][workspace]=result;persist()
+              result=compare(base,head,inspection,expected_base,expected_head);(out/'comparison.json').write_text(json.dumps(result,indent=2));print(json.dumps(result))
+              summary=os.environ.get('GITHUB_STEP_SUMMARY')
+              if summary:
+                  with open(summary,'a') as f:f.write('## Lint regression: no new diagnostics\n\n'+json.dumps(result,indent=2)+'\n\nExisting lint debt remains in the complete base/head reports; this does not certify a clean full lint run.\n')
+
+          if __name__=='__main__':
+              self_test()
+              if sys.argv[1:]!=['--self-test']:
+                  run_job(pathlib.Path(os.environ['LINT_BASE_DIR']).resolve(),pathlib.Path(os.environ['LINT_HEAD_DIR']).resolve(),pathlib.Path(os.environ['LINT_EVIDENCE_DIR']).resolve(),os.environ['LINT_EXPECT_BASE'],os.environ['LINT_EXPECT_HEAD'])
+          PY
+      - name: Preserve full reports, toolchain inspection and producer failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
+        with:
+          name: lint-regression-${{ github.run_id }}-${{ github.run_attempt }}
+          path: lint-evidence
+          if-no-files-found: error
+          retention-days: 14
+
   commits_checks:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     name: Commit linting 💬✅
     runs-on: ubuntu-slim
 
